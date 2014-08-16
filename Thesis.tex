@@ -1,0 +1,91 @@
+% class options:
+% - select either [german] or [english]
+% - select the type of thesis from:
+%   [bachelor, master, generic]
+%   (in case of generic, use \type{} to specify it)
+% - use option "alpha" for abbreviated citation (instead of numbers)
+% - option "draft" is available, too
+% - use options "utf8" or "latin1" to select inputencoding
+\documentclass[english, bachelor, utf8, alpha]{base/thesis_KBS}
+
+\usepackage{units}    % useful for settings units:              \unit[23]{m}
+%\usepackage{nicefrac} % for setting fractions esp. within text: \nicefrac{km}{h}
+
+%\usepackage{algorithm, algorithmic}  % for pseudo code (cf. documentation)
+%\renewcommand{\algorithmiccomment}[1]{\qquad{\small // \textit{#1}}}
+
+
+%%%%% my additions
+\usepackage{subfiles}
+%\usepackage{algorithm2e}
+%\usepackage{subcaption}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title{Probabilistic robot localization\\ in continuous 3D maps}
+\author{Sebastian Höffner}
+\email{shoeffner@uos.de}
+\firstSupervisor{Prof. Dr. Joachim Hertzberg}
+\secondSupervisor{Dr. Thomas Wiemann, M. Sc.}
+%\submitdate{October 2014}
+
+\generatetitle
+
+%% Preface
+\cleardoublepage
+\begin{prefacesection}{Probabilistic robot localization in continuous 3D maps}
+\subfile{abstract}
+\end{prefacesection}
+
+%% Acknowledgements
+\cleardoublepage
+\begin{acknowledgements}
+\subfile{acknowledgements}
+\end{acknowledgements}
+
+%% TOC
+\cleardoublepage
+\tableofcontents
+
+%% CONTENT
+\startTextChapters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% EXCLUDE LATER, JUST TO FILL BIBLIOGRAPHY AS A TEST
+\subfile{citation_test}
+
+%\subfile{introduction}
+
+%\subfile{history}
+
+%\subfile{stateoftheart}
+
+%\subfile{idea}
+
+% robot, given software, etc.
+%\subfile{setup}
+
+% algorithm details
+%\subfile{algorithm}
+
+% implementation details, combine with algorithm?
+%\subfile{implementation}
+
+% runtests
+%\subfile{tests}
+
+%\subfile{evaluation}
+
+%\subfile{summary}
+
+%\subfile{future}
+
+%\cleardoublepage
+
+\bibliography{bibliography}
+
+%% declaration of authorship
+\closing %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
