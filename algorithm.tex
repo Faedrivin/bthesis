@@ -1,0 +1,42 @@
+\documentclass[Thesis.tex]{subfiles}
+\begin{document}
+
+\chapter{Augmented Monte Carlo Localization in Six Dimensions}
+
+\section{The algorithm}
+
+\begin{algorithm}
+\SetKwFunction{mm}{motion\textunderscore model}
+\SetKwFunction{sm}{sensor\textunderscore model}
+\SetKwFunction{kd}{prepare\textunderscore kd\textunderscore tree}
+
+\KwIn{$X_{t-1}, u_{t}, z_{t}, m_{t}$}
+\KwOut{$X_t$}
+
+\BlankLine
+
+\kd{$m_{t}$}
+
+\BlankLine
+
+$X_t$ = $X_{t-1}$\;
+\For{$\forall x \in X_{t}$}{
+  $x$ = \mm{$x, u_{t}$}\;
+  $x$ = \sm{$x, z_{t}$}\;
+}
+
+
+\end{algorithm}
+
+$m_{t}$ = robot sensor input
+
+$u_{t}$ = robot motion (measured)
+
+$X_{t-1}$ = samples at time t-1
+
+$X_{t}$ = samples at time t
+
+$z_{t}$ = s
+
+
+\end{document}

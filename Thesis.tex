@@ -17,9 +17,15 @@
 
 %%%%% my additions
 \usepackage{subfiles}
-%\usepackage{algorithm2e}
+\usepackage{algorithm2e}
 %\usepackage{subcaption}
+\usepackage{todonotes}
 
+\usepackage[acronym, nonumberlist, nomain]{glossaries}
+\makeglossaries
+\loadglsentries{glossary_and_acronyms}
+\usepackage{makeidx}
+\makeindex
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
@@ -28,7 +34,8 @@
 \author{Sebastian Höffner}
 \email{shoeffner@uos.de}
 \firstSupervisor{Prof. Dr. Joachim Hertzberg}
-\secondSupervisor{Dr. Thomas Wiemann, M. Sc.}
+\secondSupervisor{Dr. rer. nat. Thomas Wiemann, M. Sc.}
+
 %\submitdate{October 2014}
 
 \generatetitle
@@ -52,10 +59,7 @@
 %% CONTENT
 \startTextChapters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% EXCLUDE LATER, JUST TO FILL BIBLIOGRAPHY AS A TEST
-\subfile{citation_test}
-
-%\subfile{introduction}
+\subfile{introduction}
 
 %\subfile{history}
 
@@ -64,10 +68,12 @@
 %\subfile{idea}
 
 % robot, given software, etc.
-%\subfile{setup}
+\subfile{setup}
 
 % algorithm details
-%\subfile{algorithm}
+\subfile{algorithm}
+
+\subfile{sample_generation_and_modification}
 
 % implementation details, combine with algorithm?
 %\subfile{implementation}
@@ -81,11 +87,24 @@
 
 %\subfile{future}
 
-%\cleardoublepage
+\appendix
 
-\bibliography{bibliography}
+\cleardoublepage
+\printglossary
 
+\cleardoublepage
+\bibliography{thesis_bibliography}
+
+\cleardoublepage
+\printindex
+
+\cleardoublepage
 %% declaration of authorship
 \closing %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% empty last page (back)
+\newpage
+\vspace*{1em}
+\thispagestyle{empty}
 
 \end{document}

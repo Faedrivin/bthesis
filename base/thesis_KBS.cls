@@ -19,8 +19,8 @@
 \setcounter{sprache}{-1}
 \DeclareOption{german}{
   \setcounter{sprache}{1}
-  \def\@dept{Institut f¸r Informatik\\AG Wissensbasierte Systeme}
-  \def\@deptOther{Institut f¸r Kognitionswissenschaften}
+  \def\@dept{Institut f√ºr Informatik\\AG Wissensbasierte Systeme}
+  \def\@deptOther{Institut f√ºr Kognitionswissenschaften}
   \def\@type{Masterarbeit}
 }
 \DeclareOption{english}{
@@ -28,12 +28,6 @@
   \def\@dept{Institute for Computer Science\\Knowledge-Based Systems}
   \def\@deptOther{Institute of Cognitive Science}
   \def\@type{Master's Thesis}
-}
-
-\newcounter{coffee}
-\setcounter{coffee}{0}
-\DeclareOption{coffee}{
-  \setcounter{coffee}{1}
 }
 
 \newcounter{mytype}
@@ -63,18 +57,7 @@
 \ProcessOptions
 
 
-\def\type#1{\gdef\@type{#1}}
-\def\dept#1{\gdef\@dept{#1}}
-\def\signline#1{\gdef\@signline{#1}}
-\def\signcity#1{\gdef\@signcity{#1}}
-\def\submitdate#1{\gdef\@submitdate{#1}}
-\def\@title{}
-\def\@author{}
-\def\@signcity{Osnabr¸ck}
-
-
 \RequirePackage{ifthen}
-\RequirePackage{base/coffee}
 
 \ifthenelse{\value{encoding} = 1} { % encoding is latin1
 	\usepackage[latin1]{inputenc}
@@ -82,12 +65,21 @@
 }{
 	\ifthenelse{\value{encoding} = 2} { % encoding is utf-8
 		\usepackage[utf8]{inputenc}
-	}{
-		\ifthen{\value{sprache} = 1} {
-			\RequirePackage[T1]{fontenc}
-		}
-	}
+    \RequirePackage[T1]{fontenc}
+	}{}
 }
+
+
+\def\type#1{\gdef\@type{#1}}
+\def\dept#1{\gdef\@dept{#1}}
+\def\signline#1{\gdef\@signline{#1}}
+\def\signcity#1{\gdef\@signcity{#1}}
+\def\submitdate#1{\gdef\@submitdate{#1}}
+\def\@title{}
+\def\@author{}
+\def\@signcity{Osnabr√ºck}
+
+
 
 \ifthenelse{\value{sprache} = 1} { % -> german
 	\RequirePackage[ngerman]{babel}
@@ -153,9 +145,9 @@
 % Compatible with both hyperref and backref.
 %\RequirePackage[sort]{cite}
 
-% Option "openright" l‰ﬂt jedes Kapitel auf einer ungeraden Seite starten;
-% Problem: ggf. eingef¸gte Leerseiten haben noch Kopf- und Fuﬂzeilen!!!
-% => Lˆsung:
+% Option "openright" l√§√üt jedes Kapitel auf einer ungeraden Seite starten;
+% Problem: ggf. eingef√ºgte Leerseiten haben noch Kopf- und Fu√üzeilen!!!
+% => L√∂sung:
 %
 %\makeatletter % nicht notwendig in CLS-Datei
   \def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
@@ -193,6 +185,7 @@
 %\newcommand{\C}{\mathbbm{C}}
 %\newcommand{\1}{\mathbbm{1}}                 % Einheitsmatrix
 
+\newcommand\pagenumberformatouter{Roman}
 
 % erstellt Liste, bei der alle Eintr"age um <Beispieltext>-Breite einger"uckt sind!
 % Parameter: {<Beispieltext>}
@@ -204,7 +197,7 @@
   \renewcommand{\makelabel}[1]{{#1##1\hfill}}}}
   {\end{list}}%
 %%%%%%%
-% liste + "Doppelpunkt" (notwendig, damit Doppenpunkt auﬂerhalb des Stilparameters #1)
+% liste + "Doppelpunkt" (notwendig, damit Doppenpunkt au√üerhalb des Stilparameters #1)
 \newenvironment{listeDP}[2][\rm]{\begin{list}{}{\settowidth{\labelwidth}{{#1#2}:}
   \setlength{\leftmargin}{\labelwidth}\addtolength{\leftmargin}{\labelsep}
   \addtolength{\leftmargin}{3ex}%
@@ -254,8 +247,7 @@
 \def\email#1{\gdef\@email{#1}}
 
 \newcommand{\generatetitle}{
-  \ifthenelse{\value{coffee} = 1}{\coffee{1}}{}
-  \pagenumbering{roman}
+  \pagenumbering{\pagenumberformatouter}
   \pagestyle{plain}
   \thispagestyle{empty}
   \begin{center}
@@ -287,7 +279,7 @@
                  
                  \vspace{4mm}
                  
-                 zur Erlangung des Doktorgrades (Dr.~rer.~nat.)\\ des Fachbereichs Mathematik/Informatik\\ der Universit‰t Osnabr¸ck
+                 zur Erlangung des Doktorgrades (Dr.~rer.~nat.)\\ des Fachbereichs Mathematik/Informatik\\ der Universit√§t Osnabr√ºck
                  
                  \vspace{12mm}
                  vorgelegt von
@@ -341,9 +333,8 @@
 \end{center}}
 
 \def\closing{ %the clause that you did not cheat
-  \ifthenelse{\value{sprache} = 1}{\chapter*{Erkl‰rung}}{\chapter*{Declaration of Authorship}}
+  \ifthenelse{\value{sprache} = 1}{\chapter*{Erkl√§rung}}{\chapter*{Declaration of Authorship}}
   \thispagestyle{empty}
-  \ifthenelse{\value{coffee} = 1}{\coffee{3}}{}
 
 
 \ifthenelse{\value{sprache} = 1}{
@@ -369,7 +360,6 @@
 
 \newenvironment{prefacesection}[1]
 {
-  \ifthenelse{\value{coffee} = 1}{\coffee{2}}{}
   \thispagestyle{empty}\centerline{\Large{\textbf{#1}}}\medskip
 }{}
 
@@ -381,8 +371,17 @@
 
 \newcommand{\startTextChapters}{
   \cleardoublepage
+  \newcounter{outer}\addtocounter{outer}{\value{page}} % save page number
   \pagestyle{fancy}
   \pagenumbering{arabic}
+}
+
+\let\oldAppendix\appendix
+
+\renewcommand{\appendix}{
+  \cleardoublepage
+  \pagenumbering{\pagenumberformatouter}\setcounter{page}{\value{outer}}
+  \oldAppendix
 }
 
 \typeout{J^^******************************^^J Using Thesis_KBS class, modified 2014-07-02 J^^*****************************^^J}

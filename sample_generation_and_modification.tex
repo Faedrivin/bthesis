@@ -1,0 +1,81 @@
+\documentclass[Thesis.tex]{subfiles}
+\begin{document}
+
+\section{Sample generation and modification}
+
+One important part of the algorithm is sampling\index{sampling}. Not only the sampling of new poses is crucial, it is also important that the noise in the motion model is sampled correctly. 
+
+Therefore the algorithm uses three different sampling strategies, depending on the use case for the sampled values. The first strategy is a uniform sampling to generate the initial poses. The second strategy is used for sampling noise according to the robot's sensor precision to simulate an accurate motion model. The last strategy is used to determine which poses need to be removed and where to regenerate new samples. 
+
+\subsection{Generating initial pose samples}
+The generation of new pose samples is done by drawing random numbers from a uniform distribution. For the position there is no more work needed than mapping the sampled values into the correct range.
+
+\begin{align}
+x &= x_{min} + \left( \textbf{rand()} - 0 \right) \frac{ x_{max} - x_{min} }{ 1 - 0 } \\
+y &= y_{min} + \left( \textbf{rand()} - 0 \right) \frac{ y_{max} - y_{min} }{ 1 - 0 } \\
+z &= z_{min} + \left( \textbf{rand()} - 0 \right) \frac{ z_{max} - z_{min} }{ 1 - 0 } 
+\end{align}
+
+In this equation ${\bf rand()}$ draws \gls{iid} random numbers from the source range $R_s = \left[0, \dots, 1\right]$. $x_{min}$ and $x_{max}$ (for $y$ and $z$ respectively) describe the target range $R_t = \left[x_{min}, \dots, x_{max}\right]$ in which the samples shall be generated for the respective dimension. In this work they correspond to the boundaries of the map in each dimension.
+
+By subtracting the minimum value of the source range $R_s$ from the sampled value, the range it is drawn from gets shifted to zero. The fraction $\frac{ x_{max} - x_{min} }{ 1 - 0 }$ describes the ratio between the lengths of the two ranges $\frac{|R_t|}{|R_s|}$. A multiplication of the shifted value and the ratio maps the value to the correct value in a zero shifted target interval with the length of the target range $|R_t|$. By adding the target range's minimal value, the sampled value gets shifted to the correct range.
+
+This procedure is done for each of the three positional coordinates, resulting in the positional vector $v = \left(x, y, z\right)$.
+
+Sampling the orientation is done with the \emph{subgroup algorithm} by Ken Shoemake\cite[p.~129-130]{gfxgems:1995}. It generates a unit quaternion from three uniformly distributed random values $X_0, X_1, X_2$ of the following form:
+\begin{align}
+q = \left( \sin{2\pi X_1}\sqrt{1-X_0},\: \cos{2\pi X_1}\sqrt{1-X_0},\: 
+           \sin{2\pi X_2}\sqrt{  X_0},\: \cos{2\pi X_2}\sqrt{  X_0} \right)
+\end{align}
+
+%\begin{algorithm}
+%\KwIn{Random variables $X_0, X_1, X_2$ between 0 and 1} 
+%\KwOut{Unit quaternion $q$}
+%$\theta_1 = 2\pi X_1$\;
+%$\theta_2 = 2\pi X_2$\;
+%$s_1 = \sin{2\pi X_1}$\;
+%$s_2 = \sin{2\pi X_2}$\;
+%$c_1 = \cos{2\pi X_1}$\;
+%$c_2 = \cos{2\pi X_2}$\;
+%$r_1 = \sqrt{1-X_0}$\;
+%$r_2 = \sqrt{X_0}$\;
+%\Return{q($s_1r_1, c_1r_1, s_2r_2, c_2r_2$)}
+%\end{algorithm}
+
+The vector $v$ and the orientation quaternion $q$ form the sampled robot pose.
+
+\subsection{Updating samples}
+
+A robot's sensors are subject to noise. Whenever a robot moves or turns around, its odometry data will have some errors.
+To update the pose samples accordingly, the motion model has to describe these uncertainties as well.
+
+Therefor it makes use of a covariance matrix $\Sigma$, which stores the average errors produced by the robots sensor for each corresponding dimension.
+
+\todo[inline]{a covariance matrix and some explanations how to read it}
+
+After any arbitrary time step the pose samples have to be updated according to the robot's movement, i.e. the motion model. It adds the difference between the start and goal pose (i.e. the movement) to the current pose and additionally some noise values which are drawn from a multivariate normal distribution. The distribution is around the origin gets the covariances from the sensor data. 
+
+An illustration can be found at the 2D example in figure \ref{fig:2d_noise_sampling}. The initial pose $p_{t-1}$ at time $t-1$ gets updated with the motion $\Delta p$ and the noise drawn from the normal distribution. It is more likely for the final pose $p_t$ to be close to the original motion.
+\begin{figure}
+  \todo[inline]{add picture for this}
+  \caption{The motion model updates the pose sample $p$ by adding the motion $\Delta p$ and some normal distributed noise (using the identity matrix $I$ as deviations). The resulting pose is more likely in the red area.}
+  \label{fig:2d_noise_sampling}
+\end{figure}
+
+Since multivariate normal distributions do not have analytical cumulative distribution functions (which could be inverted to sample from them), one has to use some other techniques to sample from them. A very common approach is described by James E. Gentle\cite[p.~197]{Gentle:2005}. It generates samples with the following formula:
+
+\begin{align}
+n = C^Tz+\mu % TODO check dimensions matrix/vector
+\end{align}
+
+$z$ is a vector of \gls{iid} random values drawn from one dimensional standard normal distributions. The vector $z$ gets right-multiplied to the matrix $C^T$, which is the Cholesky factorization of the covariance matrix (such that $C^TC = \Sigma$). This adjusts the sampled values to fit the multivariate normal distribution. Lastly the $\mu$-vector gets added to shift the means to the correct positions.
+
+For each pose sample these six values are drawn. The first three values simply get added to the position: $(x_t, y_t, z_t)^T = (x_{t-1}, y_{t-1}, z_{t-1})^T + \Delta p + (n_1, n_2, n_3)^T$, where $n_1$ describes the first element of the vector $n$.
+Since the robot's covariance matrix uses Euler angles but the orientations are handled by quaternions, the values for the rotation can not simply be added. Instead they are used to create new quaternions $y, p, r$ to express rotations about the yaw, pitch and roll axes respectively. These three rotations get multiplied with the updated orientation: $q_{t} = r \cdot p \cdot y \cdot \Delta q \cdot q_{t-1}$. Note that quaternion multiplication is non-commutative, so the order is important. The right-most rotation is done first. This order of rotations results in the traditional three body rotation inspired in aviation: First an airplane is able to yaw, when it starts it pitches and in the air it is able to roll as well.
+
+Putting the position and orientation together the pose sample for time $t$ is updated with the correct noise values.
+
+\subsection{Regenerating samples}
+\todo[inline]{this has to be implemented yet}
+
+\end{document}
