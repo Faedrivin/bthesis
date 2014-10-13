@@ -3,7 +3,7 @@
 
 \section{Sample generation and modification}
 
-One important part of the algorithm is sampling\index{sampling}. Not only the sampling of new poses is crucial, it is also important that the noise in the motion model is sampled correctly. 
+One important part of the algorithm is sampling. Not only the sampling of new poses is crucial, it is also important that the noise in the motion model is sampled correctly. 
 
 Therefore the algorithm uses three different sampling strategies, depending on the use case for the sampled values. The first strategy is a uniform sampling to generate the initial poses. The second strategy is used for sampling noise according to the robot's sensor precision to simulate an accurate motion model. The last strategy is used to determine which poses need to be removed and where to regenerate new samples. 
 

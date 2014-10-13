@@ -103,3 +103,5 @@ sympy-plots-for-*.tex/
 [^b]*.pdf
 *.tcp
 *.tps
+*.glsdefs
+*.bat

@@ -9,22 +9,50 @@
 \SetKwFunction{mm}{motion\textunderscore model}
 \SetKwFunction{sm}{sensor\textunderscore model}
 \SetKwFunction{kd}{prepare\textunderscore kd\textunderscore tree}
+\SetKwFunction{knn}{KNN}
+\SetKwFunction{sort}{sort}
 
-\KwIn{$X_{t-1}, u_{t}, z_{t}, m_{t}$}
-\KwOut{$X_t$}
+\SetKwProg{amcl}{AMCL6D}{}{end}
+
+\amcl{$(X_{t-1}, u_{t}, z_{t}, m_{t})$} {
 
 \BlankLine
 
-\kd{$m_{t}$}
+$k_t$ = \kd{$m_{t}$}
 
 \BlankLine
 
 $X_t$ = $X_{t-1}$\;
+\tcc{Update motion and sensor model}
 \For{$\forall x \in X_{t}$}{
-  $x$ = \mm{$x, u_{t}$}\;
-  $x$ = \sm{$x, z_{t}$}\;
+  $x.pose$ = \mm{$x.pose, u_{t}$}\;
+  $x.raytrace$ = \sm{$x$}\;
+  $x.likelihood$ = \knn{$k_t, x.raytrace$}\;
 }
 
+\BlankLine
+
+\tcc{Find normalization constant $\eta$}
+$\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\right) } }$\;
+
+\BlankLine
+
+\tcc{Calculate posterior probabilities}
+\For{$\forall x \in X_{t}$}{
+  $x.probability = \eta \cdot x.likelihood\ \cdot\ x.probability$\;
+}
+
+\BlankLine
+
+\tcc{Resampling}
+\sort{$X_{t}$}\;
+
+\For{$\forall x \in X_{t}, x.probability \le \theta $}{
+    % respawn some, 
+}
+
+\Return{$X_t$}
+}
 
 \end{algorithm}
 
@@ -36,7 +64,11 @@ $X_{t-1}$ = samples at time t-1
 
 $X_{t}$ = samples at time t
 
-$z_{t}$ = s
+$x$ = sample (contains: pose, likelihood, probability, raytrace)
 
+$z_{t}$ = ?
 
+$k_{t}$ = kd tree
+
+$\theta$ = threshold
 \end{document}
