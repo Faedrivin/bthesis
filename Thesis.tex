@@ -17,7 +17,7 @@
 
 %%%%% my additions
 \usepackage{subfiles}
-\usepackage[linesnumbered]{algorithm2e}
+\usepackage[linesnumbered, procnumbered, nofillcomment, boxed, algochapter]{algorithm2e}\DontPrintSemicolon
 %\usepackage{subcaption}
 \usepackage{todonotes}
 
@@ -61,13 +61,10 @@
 %% CONTENT
 \startTextChapters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% localization problems, bayes' filter, door example
+% introduction, motivation/idea
 \subfile{introduction}
 
-% motivation/idea/background -> 3D localization
-\subfile{idea}
-
-% robot localization
+% robot localization, bayes' filter, door example
 \subfile{localization}
 
 % current state
@@ -102,10 +99,9 @@
 \cleardoublepage
 \printglossary
 
-% list of figures
-
-% list of algorithms
-\listofalgorithms{}
+% list of figures & algorithms
+\listoffigures
+\listofalgorithms
 
 \cleardoublepage
 \bibliography{thesis_bibliography}

@@ -8,18 +8,12 @@ A common approach to this is to use some kind of Monte Carlo or Markov localizat
 
 This thesis will try to improve and extend the Monte Carlo localization method by using ray tracing from sampled positions in a 3D polygon map and comparing the robot's information to the simulation results. This should lead to a quick convergence of the positional assumptions towards the real position, in the ideal case. By using a 3D map there should be less ambiguous positions during the localization step.
 
-\todo{work on this section}
-I will first derive the 3D algorithm, set up example scenarios and compare the traditional 2D algorithm's performance to it. Comparability of the two algorithms is given because they will both first work with one laser scan, what makes them similar -- the only difference is the map. This difference gets negligible since the 3D algorithm will just use one layer, just as the 2D one.
+\bigskip
+
+The robot will sample poses into the 3D map and assign those with equal probabilities. Each sample's probability will then be updated according to the sensory input and a comparison with the 3D map. This evaluation is achieved by simulating ray traces in the 3D map and comparing the resulting point clouds to the robot's sensor data. If a sample's probability falls below a certain threshold it gets reseeded: over time most samples should be close to the most probable poses. However, a certain percentage of samples should be kept away from those poses in case the sample was a false positive and the robot needs to quickly readjust its probabilities---it then has some back-up starting points, just like the traditional 2D variant does. 
 
 \bigskip
 
-\todo{this is partly wrong}
-Although they are comparable, the 3D algorithm will work slightly different. Instead of using a cellular environment the robot will sample positions (maybe even poses) into the map and assign those with equal probabilities. Each sample's probability will then be updated according to the sensory input and a comparison with the 3D map. If a sample's probability falls below a certain threshold it gets reseeded: over time most samples should be around the most probable positions. However, a certain percentage of samples should be kept away from those positions in case the sample was a false positive and the robot needs to quickly readjust its probabilities -- it then has some back-up starting points, just like the traditional 2D variant does it.
-
-After setting up the 3D algorithm and modeling an example scenario, the two methods will be tested. The two algorithms will be compared by space complexity and run time. The former is important to check whether the algorithms are suitable for robots with limited resources and the latter to see which algorithm is faster and therefor more useful in real world applications. 
-
-\bigskip 
-
-In the end I will take a look out about how the approach might be of use and how one could possibly improve it.
+After deriving the algorithm and testing it, I will take a look out about how the approach might be of use and how one could possibly improve it.
 
 \end{document}

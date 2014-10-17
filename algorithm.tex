@@ -1,32 +1,39 @@
 \documentclass[Thesis.tex]{subfiles}
 \begin{document}
 
-\chapter{Augmented Monte Carlo Localization in Six Dimensions}
+\chapter{Augmented Monte Carlo Localization in six dimensions}
 
 \section{The algorithm}
 
 \begin{algorithm}
-\label{alg:amcl6d}
+
 \caption{AMCL6D}
-\SetKwFunction{mm}{motion\textunderscore model}
-\SetKwFunction{sm}{sensor\textunderscore model}
-\SetKwFunction{kd}{prepare\textunderscore kd\textunderscore tree}
+\label{alg:amcl6d}
+
+\SetKwFunction{mm}{motion\mathunderscore model}
+\SetKwFunction{sm}{sensor\mathunderscore model}
+\SetKwFunction{kd}{prepare\mathunderscore kd\mathunderscore tree}
 \SetKwFunction{ev}{evaluation}
+\SetKwFunction{rsrand}{resample\mathunderscore random}
+\SetKwFunction{rsclose}{resample\mathunderscore close}
 \SetKwFunction{sort}{sort}
+\SetKwFunction{rand}{rand}
+\SetKwData{rval}{random}
 
 \SetKwProg{amcl}{AMCL6D}{}{end}
 
-\amcl{$(X_{t-1}, u_{t}, z_{t}, m_{t})$} {
+\amcl{$(X_{t-1}, u_{t}, m_{t})$} {
 
 \BlankLine
 
+\tcc{Initialize}
 $k_t$ = \kd{$m_{t}$}
+$X_t$ = $X_{t-1}$\;
 
 \BlankLine
 
-$X_t$ = $X_{t-1}$\;
 \tcc{Update motion and sensor model}
-\For{$\forall x \in X_{t}$}{ 
+\ForAll{$x \in X_{t}$}{ 
   $x.pose$ = \mm{$x.pose, u_{t}$}\;
   $x.raytrace$ = \sm{$x$}\;
   $x.likelihood$ = \ev{$k_t, x.raytrace$}\;
@@ -40,7 +47,7 @@ $\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\
 \BlankLine
 
 \tcc{Calculate posterior probabilities}
-\For{$\forall x \in X_{t}$}{
+\ForAll{$x \in X_{t}$}{
   $x.probability = \eta \cdot x.likelihood\ \cdot\ x.probability$\;
 }
 
@@ -49,11 +56,22 @@ $\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\
 \tcc{Resampling}
 \sort{$X_{t}$}\;
 
-\For{$\forall x \in X_{t}, x.probability \le \theta $}{
-    % respawn some, 
+\ForAll{$x \in X_{t}$}{
+  \rval = \rand{}\;
+  \uIf{\rval $< \theta_{rand}$}{
+    $x$ = \rsrand{}\;
+  }
+  \uElseIf{\rval $< \theta_{close}$}{
+    $x$ = \rsclose{$x, X_t$}\;
+  }
+  \ElseIf{$x.probability < \theta_{prob}$}{
+    $x$ = \rsrand{}\;
+  }
 }
 
 \Return{$X_t$}
+
+\BlankLine
 }
 
 \end{algorithm}
@@ -68,9 +86,19 @@ $X_{t}$ = samples at time t
 
 $x$ = sample (contains: pose, likelihood, probability, raytrace)
 
-$z_{t}$ = ?
-
 $k_{t}$ = kd tree
 
 $\theta$ = threshold
+The algorithm \ref{alg:amcl6d} is beautiful.
+
+\begin{algorithm}
+\caption{Sample evaluation}
+\label{alg:eval}
+
+\SetKwProg{ev}{evaluation}{}{end}
+\ev{}{
+}
+\end{algorithm}
+
+
 \end{document}

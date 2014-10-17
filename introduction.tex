@@ -13,4 +13,15 @@ A similar situation occurs for every mobile robot which is turned on. If they ar
 
 The situation of relocating a robot and thus forcing it to redetermine its position is called \emph{kidnapped robot problem}\cite[p.~194]{ThrunBurgardFox:2005}. It is an extension to the \emph{global localization problem}. The global localization problem just needs to find the initial pose, while the kidnapped robot first has to realize its kidnapping---it might still assume that it is right on its original course while it was carried away.
 
+
+\section{Idea and motivation}
+
+There are several algorithms which solve localization problems, be they local or global, in two dimensional maps. A very popular algorithm, which is also capable of solving the kidnapped robot problem, is the \gls{AMCL}. 
+
+In robotics many environments are represented as 2D maps. This is useful for many real-life applications, since lots of robots operate in more or less flat environments. Although it is sufficient for many environments to represent them as a 2D map, environments with altitude differences (e.g. factories with ramps or normal houses with stairs) are hard to represent this way. Also robots which are capable of moving in more than two dimensions, e.g. flying robots, would be better off with more information.
+
+However, there are few approaches to locate robots in 3D environments. Therefore I will derive an algorithm based on the classic \gls{AMCL} to localize a robot in an arbitrary 3D environment.
+
+With the extension to a third dimension the environment should offer fewer ambiguous locations than two dimensional ones, since there are more features to detect and to be compared with the map. This should lead to a faster convergence towards the real pose of the robot. Additionally it should be possible to locate robots which are toppled over, turned upside down or flying around---basically any kind of pose in the three dimensional space should be detectable.
+
 \end{document}

@@ -20,8 +20,8 @@ A good way to model localization problems are Bayes' filters. They make use of B
 \p[P]{X}{Y} = \frac{ \p[P]{Y}{X} P(X) } { P(Y) }
 \end{align}
 
-In this equation, $P$ denotes the \gls{pdf} of a random variable. $\nicefrac{1}{P(Y)}$, commonly called $\eta$, is the normalization factor. It is usually derived by marginalization: $\sum\limits_i \p[P]{Y}{x_i}$. In a continuous approach the sum is replaced by an integral, but for the algorithm in this thesis the discrete version is sufficient.\todo[inline]{Insert reference to another chapter?} $P(X)$ is the prior. The prior is a previous assumption, defaulting to a uniformly \gls{iid} random variable, as will be seen in \todo[inline]{Insert reference}. The likelihood, the last factor needed for the calculations, can be found in $\p[P]{Y}{X}$. One can read it as the \emph{probability of $Y$ given $X$}, that means the probability of event $Y$ when event $X$ was observed. 
-The likelihood is a very important part of the algorithm and will be described in details in chapter \todo[inline]{Algorithm?}. All together Bayes' theorem is used to calculate the posterior probability of $X$ given $Y$, that is the probability that event $X$ happens when event $Y$ is observed. In other words this means that the current probability for $X$ given $Y$ is derived by calculating how likely event $Y$ is, given event $X$ regarding $X$'s sole probability. 
+In this equation, $P$ denotes the \gls{pdf} of a random variable. $\nicefrac{1}{P(Y)}$, commonly called $\eta$, is the normalization factor. It is usually derived by marginalization: $P(Y) = \sum\limits_i \p[P]{Y}{x_i}$. In a continuous approach the sum is replaced by an integral, but for the algorithm in this thesis the discrete version is sufficient. $P(X)$ is the prior. The prior is a previous assumption, defaulting to a uniformly \gls{iid} random variable. The likelihood, the last factor needed for the calculations, can be found in $\p[P]{Y}{X}$. One can read it as the \emph{probability of $Y$ given $X$}, that means the probability of event $Y$ when event $X$ was observed. 
+The likelihood is a very important part of the algorithm and will be described in details with algorithm~\ref{alg:eval}. All together Bayes' theorem is used to calculate the posterior probability of $X$ given $Y$, that is the probability that event $X$ happens when event $Y$ is observed. In other words this means that the current probability for $X$ given $Y$ is derived by calculating how likely event $Y$ is, given event $X$ regarding $X$'s sole probability. 
 
 It should be noted that throughout the rest of this thesis prior and posterior probabilities will be called prior and posterior beliefs, respectively. This terminology has a simple reason: Although a robot does not have beliefs as we use the word in terms of human thoughts, it fits the context better. Probability might imply that the algorithm would try to \emph{predict} the robot's future position---belief on the other hand describes a theoretical possible \emph{current} state.
 
@@ -33,10 +33,21 @@ By using Bayes' theorem over several time steps, it is possible to implement a M
 \caption{Bayes' filter}
 \label{alg:bayesfilter}
 \SetKwProg{bayesfilter}{bayes\mathunderscore f{i}lter}{}{end}
+\SetKwData{truevalue}{true}
+\SetKwData{guess}{best\mathunderscore guess}
+\SetKwData{belief}{best\mathunderscore belief}
 
 \bayesfilter{} {
-  \ForEach{$x_t$} {
-    bel$(x_t)$=$\eta$ likelihood$(x_t)$ bel$(x_{t-1})$\;
+  \guess = null\;
+  \belief = 0\;
+  \While{\truevalue}{
+    \ForEach{$x_t$} {
+      bel$(x_t) = \eta$ likelihood$(x_t)$ bel$(x_{t-1})$\;
+      \If{bel$(x_t) > $\belief}{
+        \belief = bel$(x_t)$\;
+        \guess = $x_t$\;
+      }
+    }
   }
 }
 \end{algorithm}
@@ -67,7 +78,5 @@ A repeated measurement would add little information to the robot's belief. So th
 During the next time step the formula~\ref{eq:door_bayes} will be used again, with the new---hence updated---belief and of course a new measurement. Since the robot again senses a door first it assigns high likelihoods for the doors, then it calculates the posterior belief. This leads to a considerable high value for the position close to the second door, we say the pose estimation converges to the real value. 
 
 After the next movement the $bel(x)$ distribution flattens a little bit again, however it should get higher probabilities again when the robot senses no door at all.
-
-\todo{some closing statement for the example, why this is a continuous example but we need a discrete version, what the differences are}
 
 \end{document}
