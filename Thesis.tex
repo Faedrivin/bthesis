@@ -17,7 +17,7 @@
 
 %%%%% my additions
 \usepackage{subfiles}
-\usepackage{algorithm2e}
+\usepackage[linesnumbered]{algorithm2e}
 %\usepackage{subcaption}
 \usepackage{todonotes}
 
@@ -61,17 +61,24 @@
 %% CONTENT
 \startTextChapters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% localization problems, bayes' filter, door example
 \subfile{introduction}
 
-%\subfile{stateoftheart}
-
+% motivation/idea/background -> 3D localization
 \subfile{idea}
+
+% robot localization
+\subfile{localization}
+
+% current state
+\subfile{stateoftheart}
 
 % robot, given software, etc.
 \subfile{setup}
 
 % algorithm details
 \subfile{algorithm}
+% own contribution
 
 \subfile{sample_generation_and_modification}
 
@@ -81,16 +88,24 @@
 % runtests - throw away?
 %\subfile{tests}
 
+% evaluation of results
 %\subfile{evaluation}
 
+% summary of the thesis
 %\subfile{summary}
 
-%\subfile{future}
+% further improvements, interesting insights for the future
+\subfile{future}
 
 \appendix
 
 \cleardoublepage
 \printglossary
+
+% list of figures
+
+% list of algorithms
+\listofalgorithms{}
 
 \cleardoublepage
 \bibliography{thesis_bibliography}
