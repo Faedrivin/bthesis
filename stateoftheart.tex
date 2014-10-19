@@ -1,14 +1,32 @@
 \documentclass[Thesis.tex]{subfiles}
 \begin{document}
 
-\chapter{State of the art}
-\section{Augmented Monte Carlo Localization in two dimensions}
+\chapter{State of the art: grids and samples}
+% name EKF, etc.
+The distinction between local localization, global localization and the kidnapped robot problem is often not enough to describe localization problems. \citet{ThrunBurgardFox:2005} also distinguish algorithms in two other categories: Which type of environment is approached and how it is approached.
 
-\subsection{Grids and samples}
+Environments can either be static or dynamic. That means they either stay the same or they change over time. It can easily be guessed that dynamic environments are harder to navigate---however, most real-life applications in robotics deal with dynamic environments, some examples include opening or closing doors, people walking through the robot's path and many more. Even changes in the environmental lighting can cause the robot's sensor data to yield very different results. 
 
-\section{Motion model}
+The last metric, the kind of approach chosen, is to distinguish between active and passive approaches. A passive approach is used whenever a robot has some tasks to do and just keeps track of its position while doing them. An active approach controls the robot towards poses which should help in improving the pose hypothesis (the best guess pose), thus reducing the localization error.
 
-\section{Sensor model}
+\bigskip
 
+Depending on the different characteristics of localization problems there are different algorithms to solve them. In general one can say that algorithms capable of solving kidnapped robot problems are also capable of solving global and local localization problems, while algorithms only designed for local localization problems will not be able to solve global localization nor kidnapped robot problems. It is also the case that algorithms for dynamic environments can solve the problems they are designed for in static environments as well. 
+The biggest difference is between active and passive algorithms, since they serve different purposes.
+
+In this thesis I will focus on algorithms solving the kidnapped robot problem in static environments by employing a passive approach.
+
+
+\section{Grid based localization}
+
+\todo[inline]{this}
+
+\section{Sample based localization}
+
+\todo[inline]{this}
+
+\subsection{Augmented Monte Carlo Localization in two dimensions}
+The \gls{AMCL} is the algorithm on which the \gls{AMCL6D} is based. 
+\todo[inline]{this}
 
 \end{document}

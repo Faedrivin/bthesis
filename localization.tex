@@ -15,7 +15,7 @@ The algorithm presented in this thesis will deal with the global localization pr
 
 \section{Bayes' filters}
 A good way to model localization problems are Bayes' filters. They make use of Bayes' theorem to calculate the probability of a pose $x$ at time $t$ by accounting for the probability at time $t-1$ and the likelihood of the current pose. The Bayes' theorem is as follows:
-
+%
 \begin{align}
 \p[P]{X}{Y} = \frac{ \p[P]{Y}{X} P(X) } { P(Y) }
 \end{align}
@@ -38,8 +38,8 @@ By using Bayes' theorem over several time steps, it is possible to implement a M
 \SetKwData{belief}{best\mathunderscore belief}
 
 \bayesfilter{} {
-  \guess = null\;
   \belief = 0\;
+  \guess = null\;
   \While{\truevalue}{
     \ForEach{$x_t$} {
       bel$(x_t) = \eta$ likelihood$(x_t)$ bel$(x_{t-1})$\;
@@ -58,17 +58,17 @@ The state with the highest belief is the most likely.
 \subsection{The door example}
 \begin{figure}
   \centering
-  \includegraphics[width=.9\columnwidth]{pics/markov_localization}
-  \caption{Markov localization. From \cite[p.~6]{ThrunBurgardFox:2005}.}
+  \includegraphics[width=.9\columnwidth]{markov_localization}
+  \caption{Markov localization: A one dimensional corridor with indistinguishable doors. From \cite[p.~6]{ThrunBurgardFox:2005}.}
   \label{fig:markov_localization_one_dimension}
 \end{figure}
 
-A popular example for demonstrating Bayes' filters is the door example, which can be seen in figure~\ref{fig:markov_localization_one_dimension}. A robot which can only move in one dimension and only sense whether it is in front of a door or not shall localize itself in a corridor. 
+A popular example for demonstrating Bayes' filters is the door example, which can be seen in figure~\ref{fig:markov_localization_one_dimension}. A robot which can only move in one dimension and only sense whether it is in front of one of many indistinguishable doors or not shall localize itself in a corridor. 
 
 At the time of initialization the robot has no information, thus its believe to be at a specific position is uniformly distributed (see fig.~\ref{fig:markov_localization_one_dimension}(a), $bel(x)$).
 
 After the initialization the robot uses its sensor to search for a door. It finds out that in fact it is located in front of one, so it applies a high likelihood for all positions which are in front of doors (see fig.~\ref{fig:markov_localization_one_dimension}(b), \p{x}{z} where $z$ denotes the sensor data). Now the prior belief $bel(x)$ and the likelihood \p{z}{x} are used to calculate the posterior belief \p{x}{z}, which is again called $bel(x)$.
-
+%
 \begin{align}
 \p{x}{z} &= \eta\: \p{z}{x} bel(x) \label{eq:door_bayes}
 \end{align}

@@ -53,7 +53,7 @@ To update the pose samples accordingly, the motion model has to describe these u
 
 Therefor it makes use of a covariance matrix $\Sigma$, which stores the average errors produced by the robots sensor for each corresponding dimension.
 
-\todo[inline]{a covariance matrix and some explanations how to read it}
+%\todo[inline]{a covariance matrix and some explanations how to read it}
 
 After any arbitrary time step the pose samples have to be updated according to the robot's movement, i.e. the motion model. It adds the difference between the start and goal pose (i.e. the movement) to the current pose and additionally some noise values which are drawn from a multivariate normal distribution. The distribution is around the origin gets the covariances from the sensor data. 
 

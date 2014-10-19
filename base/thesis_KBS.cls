@@ -365,7 +365,7 @@
 
 \newenvironment{acknowledgements}
 {
-  \thispagestyle{empty}\chapter*{Acknowledgements}\medskip
+  \thispagestyle{empty}\par\vspace*{\fill}\section*{Acknowledgements}
 }{}
 
 
