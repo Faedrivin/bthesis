@@ -4,7 +4,7 @@
 \chapter{Augmented Monte Carlo Localization in six dimensions}
 
 \section{The algorithm}
-
+%
 \begin{algorithm}
 
 \caption{AMCL6D}
@@ -27,8 +27,10 @@
 \BlankLine
 
 \tcc{Initialize}
-$k_t$ = \kd{$m_{t}$}
 $X_t$ = $X_{t-1}$\;
+$\theta_{rand}$\;
+$\theta_{close}$\;
+$\theta_{prob}$\;
 
 \BlankLine
 
@@ -36,7 +38,8 @@ $X_t$ = $X_{t-1}$\;
 \ForAll{$x \in X_{t}$}{ 
   $x.pose$ = \mm{$x.pose, u_{t}$}\;
   $x.raytrace$ = \sm{$x$}\;
-  $x.likelihood$ = \ev{$k_t, x.raytrace$}\;
+  $x.kd\mathunderscore tree$ = \kd{$x.raytrace$}\;
+  $x.likelihood$ = \ev{$x.kd\mathunderscore tree, m_{t}$}\;
 }
 
 \BlankLine
@@ -56,12 +59,12 @@ $\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\
 \tcc{Resampling}
 \sort{$X_{t}$}\;
 
-\ForAll{$x \in X_{t}$}{
+\ForAll{$x \in X_{t} \wedge x \notin X_{t,best}$}{
   \rval = \rand{}\;
-  \uIf{\rval $< \theta_{rand}$}{
+  \uIf{\rval $< 1-\theta_{rand}$}{
     $x$ = \rsrand{}\;
   }
-  \uElseIf{\rval $< \theta_{close}$}{
+  \uElseIf{\rval $< 1-\theta_{close}$}{
     $x$ = \rsclose{$x, X_t$}\;
   }
   \ElseIf{$x.probability < \theta_{prob}$}{
@@ -75,6 +78,68 @@ $\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\
 }
 
 \end{algorithm}
+%
+\algRef{alg:amcl6d} is a modification of the \gls{AMCL} algorithm presented in \cite{ThrunBurgardFox:2005}. Three major components are changed: The motion and sensor model and the evaluation function. The motion model (\algRef{alg:motionmodel}) supports motion in six dimensions and updates the pose samples accordingly. The sensor model (\algRef{alg:sensormodel}) is implemented by a raytrace algorithm. This sensor model allows for simulated scan values in the 3D polygon map. Simulated scans are needed for the last changed major component, the evaluation function (\algRef{alg:eval}). The evaluation function implements a \gls{KNN} algorithm to determine the average distance of the real sensor data to the sensor model.
+
+Before the iterative \gls{AMCL6D} algorithm starts, the program generates $n$ random samples $X_{t=0}$. They are uniformly distributed across the map, as will be described on \pageRef{sec:init_samples}. Additionally every sample gets assigned with a probability of $\nicefrac{1}{n}$.  After that the program waits for robot motion. As soon as some motion gets detected, \algRef{alg:amcl6d} starts the first iteration and updates the samples $X_{t-1}$ to $X_{t}$.
+
+The update procedure consists of several steps. First the motion model (\algRef{alg:motionmodel}) will be applied to each sample, moving them according to the detected motion. After that, each sample's sensor model needs to be updated. This is done by raytraces as described in \algRef{alg:sensormodel}. The results from the raytraces get evaluated to derive the likelihood for each sample.
+
+The samples' likelihoods and their probabilities are used to calculate their posterior probabilities. Before the last step, the resampling, the samples are sorted by their posterior probabilities. Their order determines if and how they are respawned: The unlikeliest samples are discarded and regenerated, either at random poses or close to the likeliest ones.
+
+\section{Motion model}
+%
+\begin{algorithm}
+\caption{Motion model}
+\label{alg:motionmodel}
+
+\SetKwProg{mm}{motion\mathunderscore model}{}{end}
+\SetKwFunc{genNoise}{generate\mathunderscore noise}
+\SetKwData{noise}
+\mm{$x.pose, u_{t}$}{
+  \noise = \genNoise{$\Sigma$}\;
+}
+\end{algorithm}
+%
+The motion model described in \algRef{alg:motionmodel} adds the motion difference $u_{t}$ reported by the robot to each sample's pose. Additionally it adds noise to these updates, as described on \pageRef{sec:update_samples}. The parameter for the noise function is the covariance matrix $\Sigma$, which holds the standard deviations describing the robot's sensor uncertainties.
+
+generates noise according to the covariance Matrix $\Sigma$. After updating the position 
+alg:motionmodel
+- motion model: movement + noise, see sampling
+- difference: 6 dimensions: motion in x, y, z, orientation change in phi, theta, rho
+- difficulty: sampling from 6D gaussian distribution
+
+\section{Sensor model}
+\begin{algorithm}
+\caption{Sensor model}
+\label{alg:sensormodel}
+
+\SetKwProg{sm}{sensor\mathunderscore model}{}{end}
+\sm{$x$}{
+  
+}
+\end{algorithm}
+alg:sensormodel
+- difference: raytrace
+- map: polygon mesh -> continuous
+- idea: reduce ambiguities, lead to faster convergence
+
+
+\section{Evaluation function}
+\begin{algorithm}
+\caption{Sample evaluation}
+\label{alg:eval}
+
+\SetKwProg{ev}{evaluation}{}{end}
+\ev{}{
+}
+\end{algorithm}
+
+alg:eval
+- KNN(1NN -> approx ICP) measurement -> sensor model
+- inverts average distance, i.e. 1/high values => small probability
+
+.... sampling -> next file
 
 $m_{t}$ = robot sensor input
 
@@ -91,14 +156,6 @@ $k_{t}$ = kd tree
 $\theta$ = threshold
 The algorithm \ref{alg:amcl6d} is beautiful.
 
-\begin{algorithm}
-\caption{Sample evaluation}
-\label{alg:eval}
-
-\SetKwProg{ev}{evaluation}{}{end}
-\ev{}{
-}
-\end{algorithm}
 
 
 \end{document}

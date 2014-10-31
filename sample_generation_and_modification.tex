@@ -7,7 +7,7 @@ One important part of the algorithm is sampling. Not only the sampling of new po
 
 Therefore the algorithm uses three different sampling strategies, depending on the use case for the sampled values. The first strategy is a uniform sampling to generate the initial poses. The second strategy is used for sampling noise according to the robot's sensor precision to simulate an accurate motion model. The last strategy is used to determine which poses need to be removed and where to regenerate new samples: this process filters the poses by replacing unlikely pose samples by pose samples with a bias towards the most likely ones.
 
-\subsection{Generating initial pose samples}
+\subsection{Generating initial pose samples}\label{sec:init_samples}
 The generation of new pose samples is done by drawing random numbers from a uniform distribution. For the position there is no more work needed than mapping the sampled values into the correct range. For a random value $v$ from the range $S$ the remapped value $v_n$ from the range $T$ gets calculated by the formula $v_n = T_{min} + v \frac{|S|}{|T|}$, where $|S|$ denotes the length of range $S$ (or $T$, respectively) and $T_{min}$ denotes the smallest value of $T$. For the three needed values $x, y,$ and $z$ this results in the following calculations.
 %
 \begin{align}
@@ -46,7 +46,7 @@ q = \left( \sin{2\pi X_1}\sqrt{1-X_0},\: \cos{2\pi X_1}\sqrt{1-X_0},\:
 
 The generated vector $v$ and the orientation quaternion $q$ form the sampled robot pose. Initially all poses get the same probability: $\nicefrac{1}{n}$, where $n$ is the number of samples.
 
-\subsection{Updating samples}
+\subsection{Updating samples}\label{sec:update_samples}
 
 A robot's sensors are subject to noise. Whenever a robot moves or turns around, its odometry data will have some errors.
 To update the pose samples accordingly, the motion model has to describe these uncertainties as well.
@@ -57,7 +57,7 @@ Therefor it makes use of a covariance matrix $\Sigma$, which stores the average 
 
 After any arbitrary time step the pose samples have to be updated according to the robot's movement, i.e. the motion model. It adds the difference between the start and goal pose (i.e. the movement) to the current pose and additionally some noise values which are drawn from a multivariate normal distribution. The distribution is around the origin gets the covariances from the sensor data. 
 
-An illustration can be found at the 2D example in figure \ref{fig:2d_noise_sampling}. The initial pose $p_{t-1}$ at time $t-1$ gets updated with the motion $\Delta p$ and the noise drawn from the normal distribution. It is more likely for the final pose $p_t$ to be close to the original motion.
+An illustration can be found at the 2D example in \figRef{fig:2d_noise_sampling}. The initial pose $p_{t-1}$ at time $t-1$ gets updated with the motion $\Delta p$ and the noise drawn from the normal distribution. It is more likely for the final pose $p_t$ to be close to the original motion.
 \begin{figure}
   \todo[inline]{add picture for this}
   \caption{The motion model updates the pose sample $p$ by adding the motion $\Delta p$ and some normal distributed noise (using the identity matrix $I$ as deviations). The resulting pose is more likely in the red area.}
@@ -73,11 +73,14 @@ n = C^T z + \mu
 Here $z$ is a vector of \gls{iid} random values drawn from one dimensional standard normal distributions. The vector $z$ gets right-multiplied to the matrix $C^T$, which is the Cholesky factorization of the covariance matrix (such that $C^TC = \Sigma$). This adjusts the sampled values to fit the multivariate normal distribution. Lastly the $\mu$-vector gets added to shift the means to the correct positions.
 
 For each pose sample these six values are drawn. The first three values simply get added to the position: $(x_t, y_t, z_t)^T = (x_{t-1}, y_{t-1}, z_{t-1})^T + \Delta p + (n_1, n_2, n_3)^T$, where $n_1$ describes the first element of the vector $n$.
-Since the robot's covariance matrix uses Euler angles but the orientations are handled by quaternions, the values for the rotation can not simply be added. Instead they are used to create new quaternions $q_{yaw}, q_{pitch},$ and $q_{roll}$ to express rotations about the yaw, pitch and roll axes respectively. These three rotations get multiplied with the updated orientation (that is $q_{t-1}$ rotated by the orientation difference $\Delta q$): $q_{t} = q_{roll} \cdot q_{pitch} \cdot q_{yaw} \cdot \Delta q \cdot q_{t-1}$. Note that quaternion multiplication is non-commutative, so the order is important: The right-most rotation is done first. This order of rotations results in the traditional three body rotation inspired in aviation: First an airplane is able to yaw, when it starts it pitches and in the air it is additionally able to roll.
+Since the robot's covariance matrix uses Euler angles but the orientations are handled by quaternions, the values for the rotation can not simply be added. Instead they are used to create new quaternions $q_{yaw}, q_{pitch},$ and $q_{roll}$ to express rotations about the yaw, pitch and roll axes respectively. These three rotations get multiplied with the updated orientation (that is $q_{t-1}$ rotated by the inverse of the orientation difference $\Delta q^{-1}$): $q_{t} = q_{roll} \cdot q_{pitch} \cdot q_{yaw} \cdot \Delta q^{-1} \cdot q_{t-1}$. Note that quaternion multiplication is non-commutative, so the order is important: The right-most rotation is done first. This order of rotations results in the traditional three body rotation inspired in aviation: First an airplane is able to yaw, when it starts it pitches and in the air it is additionally able to roll.
 
 Putting the position and orientation together the pose sample for time $t$ is updated with the correct noise values.
 
 \subsection{Regenerating samples}
 \todo[inline]{this has to be implemented yet}
+Sample regeneration is performed as the last step in the \gls{AMCL6D} algorithm. The method used for resampling individual particles depends on $\theta_{close}, \theta_{random},$ and $\theta_{prob}$.
+
+After each iteration 
 
 \end{document}
