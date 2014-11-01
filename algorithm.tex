@@ -84,13 +84,30 @@ Before the iterative \gls{AMCL6D} algorithm starts, the program generates $n$ ra
 The update procedure consists of several steps. First the motion model (\algRef{alg:motionmodel}) will be applied to each sample, moving them according to the detected motion. After that, each sample's sensor model needs to be updated. This is done by ray traces as described in \algRef{alg:sensormodel}. The results from the ray traces get evaluated to derive the likelihood for each sample.
 
 The samples' likelihoods and their probabilities are used to calculate their posterior probabilities. Before the last step, the resampling, the samples are sorted by their posterior probabilities. Their order determines if and how they are respawned: The unlikeliest samples are discarded and regenerated, either at random poses or close to the likeliest ones.
+
+\todo[inline]{Write something about input parameters etc}
+
+
+$m_{t}$ = robot sensor input
+
+$u_{t}$ = robot motion (measured)
+
+$X_{t-1}$ = samples at time t-1
+
+$X_{t}$ = samples at time t
+
+$x$ = sample (contains: pose, likelihood, probability, raytrace)
+
+$k_{t}$ = kd tree
+
+$\theta$ = threshold
 %
 %
 %
 %
 %
 %
-\section{Motion model}
+\section{Motion model}\label{sec:motion_model_section}
 %
 \begin{algorithm}[!htp]
 \caption{Motion model}
@@ -187,8 +204,8 @@ Thus the image plane's corners are $c_{bl}=(y_{min}, z_{min}), c_{br}=(y_{max}, 
 However, algorithmically it is not necessary to calculate all these points or individual cells. $y_{min/max}, z_{min/max}$ and the cell size of the image plane's cells, $w$ and $h$, are already enough to iterate over the plane and cast a ray for each cell with \algRef{alg:iterate_imageplane}.
 %
 \begin{algorithm}[!htp]
-\label{alg:iterate_imageplane}
 \caption{Iterating the image plane to cast rays through each cell.}
+\label{alg:iterate_imageplane}
 $y = y_{min}$\;
 $z = z_{min}$\;
 \While{$y \le y_{max}$}{
@@ -202,7 +219,12 @@ $z = z_{min}$\;
 %
 To speed up the intersection checks, \gls{CGAL} offers the ability to build an \gls{AABB} from the map data\cite[]{cgal:atw-aabb-14b}. An \gls{AABB} is a data structure to store primitives in axis-aligned bounding boxes which are organized in a tree structure and therefore easier to process than the raw data. Primitives are simple geometries, in the case of \gls{AMCL6D} these simple geometries are triangles. Axis-aligned bounding boxes are cuboids with all edges parallel to the corresponding axis of the global coordinate system which encase an object, in the case of the \gls{AABB} the primitives. \figRef{fig:aabb_ex} illustrates an example for axis-aligned bounding box encasing a triangle. 
 The speed up is achieved by checking for an intersection of the ray with a bounding box first, before calculating the exact intersection with the encased geometry.
-
+\begin{figure}%
+%\includegraphics[width=\columnwidth]{pics/aabb_ex}%
+\caption{An axis-aligned bounding box encasing a triangle.}%
+\label{fig:aabb_ex}%
+\end{figure}
+%
 \figRef{fig:raytrace} pictures an example ray trace showing the simulated robot's pose (arrow) and the point cloud which resulted from the ray trace at that pose.
 \begin{figure}[!htp]
   %\includegraphics[width=\columnwidth]{pics/raytrace_example}
@@ -228,29 +250,15 @@ The resulting point cloud can be used to evaluate the corresponding sample in th
 
 \SetKwProg{ev}{evaluation}{}{end}
 \ev{}{
-\todo[inline]{add to this}
+a=b
 }
 \end{algorithm}
-%
+
 alg:eval
 - KNN(1NN -> approx ICP) measurement -> sensor model
 - inverts average distance, i.e. 1/high values => small probability
 
 .... sampling -> next file
-
-$m_{t}$ = robot sensor input
-
-$u_{t}$ = robot motion (measured)
-
-$X_{t-1}$ = samples at time t-1
-
-$X_{t}$ = samples at time t
-
-$x$ = sample (contains: pose, likelihood, probability, raytrace)
-
-$k_{t}$ = kd tree
-
-$\theta$ = threshold
 
 
 
