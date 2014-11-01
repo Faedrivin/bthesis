@@ -1,11 +1,11 @@
 \documentclass[Thesis.tex]{subfiles}
 \begin{document}
-
-\chapter{Augmented Monte Carlo Localization in six dimensions}
-
-\section{The algorithm}
 %
-\begin{algorithm}
+\chapter{Augmented Monte Carlo Localization in six dimensions}
+%
+%\section{The algorithm}
+%
+\begin{algorithm}[!htp]
 
 \caption{AMCL6D}
 \label{alg:amcl6d}
@@ -28,16 +28,14 @@
 
 \tcc{Initialize}
 $X_t$ = $X_{t-1}$\;
-$\theta_{rand}$\;
-$\theta_{close}$\;
-$\theta_{prob}$\;
+init $\theta_{rand}$, $\theta_{close}$, $\theta_{prob}$\;
 
 \BlankLine
 
 \tcc{Update motion and sensor model}
 \ForAll{$x \in X_{t}$}{ 
   $x.pose$ = \mm{$x.pose, u_{t}$}\;
-  $x.raytrace$ = \sm{$x$}\;
+  $x.raytrace$ = \sm{$x.pose$}\;
   $x.kd\mathunderscore tree$ = \kd{$x.raytrace$}\;
   $x.likelihood$ = \ev{$x.kd\mathunderscore tree, m_{t}$}\;
 }
@@ -79,62 +77,161 @@ $\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\
 
 \end{algorithm}
 %
-\algRef{alg:amcl6d} is a modification of the \gls{AMCL} algorithm presented in \cite{ThrunBurgardFox:2005}. Three major components are changed: The motion and sensor model and the evaluation function. The motion model (\algRef{alg:motionmodel}) supports motion in six dimensions and updates the pose samples accordingly. The sensor model (\algRef{alg:sensormodel}) is implemented by a raytrace algorithm. This sensor model allows for simulated scan values in the 3D polygon map. Simulated scans are needed for the last changed major component, the evaluation function (\algRef{alg:eval}). The evaluation function implements a \gls{KNN} algorithm to determine the average distance of the real sensor data to the sensor model.
+\algRef{alg:amcl6d} is a modification of the \gls{AMCL} algorithm presented in \cite{ThrunBurgardFox:2005}. Three major components are changed: The motion and sensor model and the evaluation function. The motion model (\algRef{alg:motionmodel}) supports motion in six dimensions and updates the pose samples accordingly. The sensor model (\algRef{alg:sensormodel}) is implemented by a ray trace algorithm. This sensor model allows for simulated scan values in the 3D polygon map. Simulated scans are needed for the last changed major component, the evaluation function (\algRef{alg:eval}). The evaluation function implements a \gls{KNN} algorithm to determine the average distance of the real sensor data to the sensor model.
 
 Before the iterative \gls{AMCL6D} algorithm starts, the program generates $n$ random samples $X_{t=0}$. They are uniformly distributed across the map, as will be described on \pageRef{sec:init_samples}. Additionally every sample gets assigned with a probability of $\nicefrac{1}{n}$.  After that the program waits for robot motion. As soon as some motion gets detected, \algRef{alg:amcl6d} starts the first iteration and updates the samples $X_{t-1}$ to $X_{t}$.
 
-The update procedure consists of several steps. First the motion model (\algRef{alg:motionmodel}) will be applied to each sample, moving them according to the detected motion. After that, each sample's sensor model needs to be updated. This is done by raytraces as described in \algRef{alg:sensormodel}. The results from the raytraces get evaluated to derive the likelihood for each sample.
+The update procedure consists of several steps. First the motion model (\algRef{alg:motionmodel}) will be applied to each sample, moving them according to the detected motion. After that, each sample's sensor model needs to be updated. This is done by ray traces as described in \algRef{alg:sensormodel}. The results from the ray traces get evaluated to derive the likelihood for each sample.
 
 The samples' likelihoods and their probabilities are used to calculate their posterior probabilities. Before the last step, the resampling, the samples are sorted by their posterior probabilities. Their order determines if and how they are respawned: The unlikeliest samples are discarded and regenerated, either at random poses or close to the likeliest ones.
-
+%
+%
+%
+%
+%
+%
 \section{Motion model}
 %
-\begin{algorithm}
+\begin{algorithm}[!htp]
 \caption{Motion model}
 \label{alg:motionmodel}
 
+\SetKwFunction{genNoise}{generate\mathunderscore noise}
+\SetKwData{noise}{noise}
 \SetKwProg{mm}{motion\mathunderscore model}{}{end}
-\SetKwFunc{genNoise}{generate\mathunderscore noise}
-\SetKwData{noise}
 \mm{$x.pose, u_{t}$}{
   \noise = \genNoise{$\Sigma$}\;
+  $x.pose.position += u_{t}.position + $\noise$\left[0 \dots 2\right]$\;
+  $q_{yaw} =$ new QuaternionAboutAxis(ZAxis, \noise$\left[3\right]$)\;
+  $q_{pitch} =$ new QuaternionAboutAxis(YAxis, \noise$\left[4\right]$)\;
+  $q_{roll} =$ new QuaternionAboutAxis(XAxis, \noise$\left[5\right]$)\;
+  $x.pose.orientation = q_{roll} \cdot q_{pitch} \cdot q_{yaw} \cdot u_{t}.orientation^{-1} \cdot x.pose.orientation$\;
+  \Return{$x.pose$}\;
 }
 \end{algorithm}
 %
-The motion model described in \algRef{alg:motionmodel} adds the motion difference $u_{t}$ reported by the robot to each sample's pose. Additionally it adds noise to these updates, as described on \pageRef{sec:update_samples}. The parameter for the noise function is the covariance matrix $\Sigma$, which holds the standard deviations describing the robot's sensor uncertainties.
+Robots' sensors are subject to noise. Whenever a robot moves or turns around, its odometry data will have some errors.
+To update the pose samples accordingly, the motion model in \algRef{alg:motionmodel} has to describe these uncertainties as well.
 
-generates noise according to the covariance Matrix $\Sigma$. After updating the position 
-alg:motionmodel
-- motion model: movement + noise, see sampling
-- difference: 6 dimensions: motion in x, y, z, orientation change in phi, theta, rho
-- difficulty: sampling from 6D gaussian distribution
+Therefor it makes use of a covariance matrix $\Sigma$, which stores the average errors produced by the robots sensor for each corresponding dimension.
+%\todo[inline]{a covariance matrix and some explanations how to read it}
 
+After any arbitrary time step the pose samples have to be updated according to the robot's movement, i.e. the motion model. It adds the difference between the start and goal pose (i.e. the movement) to the current pose and additionally some noise values which are drawn from a multivariate normal distribution. The distribution is around the origin gets the covariances from the sensor data. 
+
+An illustration can be found at the 2D example in \figRef{fig:2d_noise_sampling}. The initial pose $p_{t-1}$ at time $t-1$ gets updated with the motion $\Delta p$ and the noise drawn from the normal distribution. It is more likely for the final pose $p_t$ to be close to the original motion.
+\begin{figure}[!htp]
+  \todo[inline]{add picture for this}
+  \caption{The motion model updates the pose sample $p$ by adding the motion $\Delta p$ and some normal distributed noise (using the identity matrix $I$ as deviations). The resulting pose is more likely in the red area.}
+  \label{fig:2d_noise_sampling}
+\end{figure}
+%
+Since multivariate normal distributions do not have analytical \gls{cdf}s (which could be inverted to sample from them), one has to use some other techniques to sample from them. A very common approach is described by James E. Gentle\cite[p.~197]{Gentle:2005}. It generates samples with the following formula:
+%
+\begin{align}
+n = C^T z + \mu
+\end{align}
+
+Here $z$ is a vector of \gls{iid} random values drawn from one dimensional standard normal distributions. The vector $z$ gets right-multiplied to the matrix $C^T$, which is the Cholesky factorization of the covariance matrix (such that $C^TC = \Sigma$). This adjusts the sampled values to fit the multivariate normal distribution. Lastly the $\mu$-vector gets added to shift the means to the correct positions.
+
+Contrary to the classical \gls{AMCL} in \gls{AMCL6D} not only three but six random values are drawn for each pose sample. The first three values simply get added to the position: $(x_t, y_t, z_t)^T = (x_{t-1}, y_{t-1}, z_{t-1})^T + \Delta p + (n_1, n_2, n_3)^T$, where $n_1$ describes the first element of the vector $n$, the sampled noise.
+Since the robot's covariance matrix uses Euler angles but the orientations are handled by quaternions, the values for the rotation can not simply be added. Instead they are used to create new quaternions $q_{yaw}, q_{pitch},$ and $q_{roll}$ to express rotations about the yaw, pitch and roll axes (in \algRef{alg:motionmodel} the \gls{ROS} coordinate system is used) respectively. These three rotations get multiplied with the updated orientation (that is $q_{t-1}$ rotated by the inverse of the orientation difference $\Delta q^{-1}$): $q_{t} = q_{roll} \cdot q_{pitch} \cdot q_{yaw} \cdot \Delta q^{-1} \cdot q_{t-1}$. Note that quaternion multiplication is non-commutative, so the order is important: The right-most rotation is done first. This order of rotations results in the traditional three body rotation inspired in aviation: First an airplane is able to yaw, when it starts it pitches and in the air it is additionally able to roll.
+
+Putting the position and orientation together the pose sample for time $t$ is updated with the correct noise values.
+%
+%
+%
+%
+%
+%
 \section{Sensor model}
-\begin{algorithm}
+%
+\begin{algorithm}[!htp]
 \caption{Sensor model}
 \label{alg:sensormodel}
 
+\SetKwData{raytrace}{raytrace}
+\SetKwFunction{rtAt}{raytrace\mathunderscore at}
+\SetKwFunction{normRT}{normalize\mathunderscore raytrace}
 \SetKwProg{sm}{sensor\mathunderscore model}{}{end}
-\sm{$x$}{
-  
+\sm{$x.pose$}{
+  \raytrace = \rtAt{$x.pose$}\;
+  \raytrace = \normRT{\raytrace, $x.pose$}\;
+  \Return{\raytrace}\;
 }
 \end{algorithm}
-alg:sensormodel
-- difference: raytrace
-- map: polygon mesh -> continuous
-- idea: reduce ambiguities, lead to faster convergence
+%
+The sensor model, illustrated in \algRef{alg:sensormodel}, is an exchangeable component of \gls{AMCL}. \gls{AMCL6D} is working on continuous polygon maps, which require a suiting form of sensor models. For \gls{AMCL6D} the sensor model is implemented as a ray tracer. This allows to simulate accurate sensor data in continuous map. 
 
+%\subsection{Ray tracing}
+The ray tracer\footnote{Since the ray tracer does not take reflections or refractions into account but only searches for intersections, it is a ray cast algorithm.} used in \gls{AMCL6D} calculates the intersections of rays emanating from the robot's position with the map. Since laser scanners, cameras, or other sensors do not only emit a single light ray, the ray tracer for \gls{AMCL6D} also needs to test many rays. 
 
+Since the rays are supposed to simulate a camera, they are cast through an image plane. This helps to determine a second point to construct the rays: The image plane will be divided into small cells, depending on the simulated resolution. One ray is cast through each of these cells and for each of them it has to be checked whether it intersects with the map or not. If it does, the intersection point is stored into a point cloud. The ray tracing is illustrated in \figRef{fig:raytrace_scheme}.
+%
+\begin{figure}[!htp]
+  %\includegraphics[width=\columnwidth]{pics/raytrace_scheme}
+  \caption{Rays are cast from the robot's position through the image plane.}
+  \label{fig:raytrace_scheme}
+\end{figure}
+%
+The image plane is calculated with the aperture angles ($\theta$ for the horizontal and $\phi$ for the vertical aperture angle, in radians) and the focal length ($F$) of the simulated sensor. It is described by the intersections of its four edges and gets divided into cells according to the horizontal and vertical resolution of the sensor. To calculate the coordinates (\gls{ROS}' coordinate system) of the intersections, the following formulas are used.
+%
+\begin{align}
+y_{min} &= F \cdot \tan{-\frac{\theta}{2}} &\label{form:image_plane} \\
+y_{max} &= F \cdot \tan{ \frac{\theta}{2}} &\\
+z_{min} &= F \cdot \tan{-\frac{\phi}{2}} &\\
+z_{max} &= F \cdot \tan{ \frac{\phi}{2}} &
+\end{align}
+%
+Thus the image plane's corners are $c_{bl}=(y_{min}, z_{min}), c_{br}=(y_{max}, z_{min}), c_{tl}=(y_{min}, z_{max}),$ and $c_{tr}=(y_{max}, z_{max})$. The cell size ($w$idth and $h$eight) is then calculated with $w=|c_{br}-c_{bl}|/res_{hor}$ and $h=|c_{tl}-c_{bl}|/res_{ver}$, with $res_{hor}$ being the horizontal and $res_{ver}$ the vertical resolution.
+
+However, algorithmically it is not necessary to calculate all these points or individual cells. $y_{min/max}, z_{min/max}$ and the cell size of the image plane's cells, $w$ and $h$, are already enough to iterate over the plane and cast a ray for each cell with \algRef{alg:iterate_imageplane}.
+%
+\begin{algorithm}[!htp]
+\label{alg:iterate_imageplane}
+\caption{Iterating the image plane to cast rays through each cell.}
+$y = y_{min}$\;
+$z = z_{min}$\;
+\While{$y \le y_{max}$}{
+  \While{$z \le z_{max}$}{
+    cast ray from $pose.position$ through $(y,z)$\;
+    $z += h$\;
+  }
+  $y += w$\;
+}
+\end{algorithm}
+%
+To speed up the intersection checks, \gls{CGAL} offers the ability to build an \gls{AABB} from the map data\cite[]{cgal:atw-aabb-14b}. An \gls{AABB} is a data structure to store primitives in axis-aligned bounding boxes which are organized in a tree structure and therefore easier to process than the raw data. Primitives are simple geometries, in the case of \gls{AMCL6D} these simple geometries are triangles. Axis-aligned bounding boxes are cuboids with all edges parallel to the corresponding axis of the global coordinate system which encase an object, in the case of the \gls{AABB} the primitives. \figRef{fig:aabb_ex} illustrates an example for axis-aligned bounding box encasing a triangle. 
+The speed up is achieved by checking for an intersection of the ray with a bounding box first, before calculating the exact intersection with the encased geometry.
+
+\figRef{fig:raytrace} pictures an example ray trace showing the simulated robot's pose (arrow) and the point cloud which resulted from the ray trace at that pose.
+\begin{figure}[!htp]
+  %\includegraphics[width=\columnwidth]{pics/raytrace_example}
+  \caption{A simulated ray trace in an example map.}
+  \label{fig:raytrace}
+\end{figure}
+%
+To be able to compare the point cloud generated by the ray trace with the point cloud from the sensor, they need to be in the same reference frame. This means they both have to be transformed in a way such that their origins are at the same point. The pose of the sample can be used to construct an affine transformation matrix $A$, that is a matrix which describes the transformation needed from the global origin to the pose. By taking the inverse $A^{-1}$ it is possible to construct a matrix which describes the opposite: the transformation from the pose back to the origin. This inverted matrix $A^{-1}$ can be applied to each point $p$ in the point cloud $PCL$ to move it to a position relative to the global origin. Note that since a translation is involved, the points and matrix need to be extended by a homogenous coordinate.
+%
+\begin{align}
+  \forall p \in PCL: p = A^{-1} \dot p
+\end{align}
+%
+The resulting point cloud can be used to evaluate the corresponding sample in the evaluation function.
+%
+%
+%
 \section{Evaluation function}
-\begin{algorithm}
+%
+\begin{algorithm}[!htp]
 \caption{Sample evaluation}
 \label{alg:eval}
 
 \SetKwProg{ev}{evaluation}{}{end}
 \ev{}{
+\todo[inline]{add to this}
 }
 \end{algorithm}
-
+%
 alg:eval
 - KNN(1NN -> approx ICP) measurement -> sensor model
 - inverts average distance, i.e. 1/high values => small probability
@@ -154,7 +251,6 @@ $x$ = sample (contains: pose, likelihood, probability, raytrace)
 $k_{t}$ = kd tree
 
 $\theta$ = threshold
-The algorithm \ref{alg:amcl6d} is beautiful.
 
 
 
