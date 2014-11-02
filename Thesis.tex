@@ -21,7 +21,7 @@
 %\usepackage{subcaption}
 \usepackage{todonotes}
 
-\usepackage[acronym, nonumberlist, nomain]{glossaries}
+\usepackage[acronym, nonumberlist, nomain, toc]{glossaries}
 \makeglossaries
 \loadglsentries{glossary_and_acronyms}
 
@@ -29,6 +29,7 @@
 
 \def\figRef#1{Figure~\ref{#1}}
 \def\algRef#1{Algorithm~\ref{#1}}
+\def\lineRef#1#2{Algorithm~\ref{#1}, Line~\ref{#2}}
 \def\tableRef#1{Table~\ref{#1}}
 \def\formRef#1{Formula~\ref{#1}}
 \def\pageRef#1{Page~\pageref{#1}}
@@ -108,7 +109,8 @@
 % list of figures & algorithms
 \listoffigures
 \listofalgorithms
-\printglossary
+\glossarystyle{altlist}
+\printglossary[title={List of Acronyms},toctitle={List of Acronyms}]
 
 \cleardoublepage
 \bibliography{thesis_bibliography}
