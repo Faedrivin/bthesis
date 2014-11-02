@@ -12,7 +12,6 @@
 
 \SetKwFunction{mm}{motion\mathunderscore model}
 \SetKwFunction{sm}{sensor\mathunderscore model}
-\SetKwFunction{kd}{prepare\mathunderscore kd\mathunderscore tree}
 \SetKwFunction{ev}{evaluation}
 \SetKwFunction{rsrand}{resample\mathunderscore random}
 \SetKwFunction{rsclose}{resample\mathunderscore close}
@@ -36,14 +35,13 @@ init $\theta_{rand}$, $\theta_{close}$, $\theta_{prob}$\;
 \ForAll{$x \in X_{t}$}{ 
   $x.pose$ = \mm{$x.pose, u_{t}$}\;
   $x.raytrace$ = \sm{$x.pose$}\;
-  $x.kd\mathunderscore tree$ = \kd{$x.raytrace$}\;
-  $x.likelihood$ = \ev{$x.kd\mathunderscore tree, m_{t}$}\;
+  $x.likelihood$ = \ev{$x.raytrace, m_{t}$}\;
 }
 
 \BlankLine
 
 \tcc{Find normalization constant $\eta$}
-$\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\right) } }$\;
+$\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\right) } }$\;\label{alg:geteta}
 
 \BlankLine
 
@@ -77,7 +75,7 @@ $\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\
 
 \end{algorithm}
 %
-\algRef{alg:amcl6d} is a modification of the \gls{AMCL} algorithm presented in \cite{ThrunBurgardFox:2005}. Three major components are changed: The motion and sensor model and the evaluation function. The motion model (\algRef{alg:motionmodel}) supports motion in six dimensions and updates the pose samples accordingly. The sensor model (\algRef{alg:sensormodel}) is implemented by a ray trace algorithm. This sensor model allows for simulated scan values in the 3D polygon map. Simulated scans are needed for the last changed major component, the evaluation function (\algRef{alg:eval}). The evaluation function implements a \gls{KNN} algorithm to determine the average distance of the real sensor data to the sensor model.
+\algRef{alg:amcl6d} is a modification of the \gls{AMCL} algorithm presented in \cite{ThrunBurgardFox:2005}. Three major components are changed: The motion and sensor model and the evaluation function. The motion model (\algRef{alg:motionmodel}) supports motion in six dimensions and updates the pose samples accordingly. The sensor model (\algRef{alg:sensormodel}) is implemented by a ray trace algorithm. This sensor model allows for simulated scan values in the 3D polygon map. Simulated scans are needed for the last changed major component, the evaluation function (\algRef{alg:eval}). The evaluation function implements a \gls{knn} algorithm to determine the average distance of the real sensor data to the sensor model.
 
 Before the iterative \gls{AMCL6D} algorithm starts, the program generates $n$ random samples $X_{t=0}$. They are uniformly distributed across the map, as will be described on \pageRef{sec:init_samples}. Additionally every sample gets assigned with a probability of $\nicefrac{1}{n}$.  After that the program waits for robot motion. As soon as some motion gets detected, \algRef{alg:amcl6d} starts the first iteration and updates the samples $X_{t-1}$ to $X_{t}$.
 
@@ -85,22 +83,13 @@ The update procedure consists of several steps. First the motion model (\algRef{
 
 The samples' likelihoods and their probabilities are used to calculate their posterior probabilities. Before the last step, the resampling, the samples are sorted by their posterior probabilities. Their order determines if and how they are respawned: The unlikeliest samples are discarded and regenerated, either at random poses or close to the likeliest ones.
 
-\todo[inline]{Write something about input parameters etc}
+\smallskip
 
+The algorithm has three input parameters. First the samples from the last time step $X_{t-1}$, which will be updated to $X_t$ during the algorithm. Each sample $x \in X_t$ has a pose ($x.pose$), a probability ($x.probability$), a likelihood ($x.likelihood$), and a point cloud ($x.raytrace$). The pose and the probability are initialized during the sample generation, while the likelihood and point cloud get assigned later.
 
-$m_{t}$ = robot sensor input
+To update the samples according to the motion model, the robot motion $u_{t}$ between times $t-1$ and $t$ is needed. This is usually supplied by odometry data. The last input parameter is the measured sensor input $m_{t}$ in form of a point cloud, that is a collection of points which get compared to the sensor model simulation.
 
-$u_{t}$ = robot motion (measured)
-
-$X_{t-1}$ = samples at time t-1
-
-$X_{t}$ = samples at time t
-
-$x$ = sample (contains: pose, likelihood, probability, raytrace)
-
-$k_{t}$ = kd tree
-
-$\theta$ = threshold
+Additionally to the input parameters there are a few global parameters to tweak the algorithm, namely $\theta_{rand}$, $\theta_{close}$, and $\theta_{prob}$. They are thresholds used to determine which samples get regenerated and how.
 %
 %
 %
@@ -116,7 +105,7 @@ $\theta$ = threshold
 \SetKwFunction{genNoise}{generate\mathunderscore noise}
 \SetKwData{noise}{noise}
 \SetKwProg{mm}{motion\mathunderscore model}{}{end}
-\mm{$x.pose, u_{t}$}{
+\mm{$(x.pose, u_{t})$}{
   \noise = \genNoise{$\Sigma$}\;
   $x.pose.position += u_{t}.position + $\noise$\left[0 \dots 2\right]$\;
   $q_{yaw} =$ new QuaternionAboutAxis(ZAxis, \noise$\left[3\right]$)\;
@@ -137,7 +126,7 @@ After any arbitrary time step the pose samples have to be updated according to t
 
 An illustration can be found at the 2D example in \figRef{fig:2d_noise_sampling}. The initial pose $p_{t-1}$ at time $t-1$ gets updated with the motion $\Delta p$ and the noise drawn from the normal distribution. It is more likely for the final pose $p_t$ to be close to the original motion.
 \begin{figure}[!htp]
-  \todo[inline]{add picture for this}
+  \todo[inline]{add picture}
   \caption{The motion model updates the pose sample $p$ by adding the motion $\Delta p$ and some normal distributed noise (using the identity matrix $I$ as deviations). The resulting pose is more likely in the red area.}
   \label{fig:2d_noise_sampling}
 \end{figure}
@@ -145,7 +134,7 @@ An illustration can be found at the 2D example in \figRef{fig:2d_noise_sampling}
 Since multivariate normal distributions do not have analytical \gls{cdf}s (which could be inverted to sample from them), one has to use some other techniques to sample from them. A very common approach is described by James E. Gentle\cite[p.~197]{Gentle:2005}. It generates samples with the following formula:
 %
 \begin{align}
-n = C^T z + \mu
+n = C^T z + \mu \label{form:mvndsampling}
 \end{align}
 
 Here $z$ is a vector of \gls{iid} random values drawn from one dimensional standard normal distributions. The vector $z$ gets right-multiplied to the matrix $C^T$, which is the Cholesky factorization of the covariance matrix (such that $C^TC = \Sigma$). This adjusts the sampled values to fit the multivariate normal distribution. Lastly the $\mu$-vector gets added to shift the means to the correct positions.
@@ -170,7 +159,7 @@ Putting the position and orientation together the pose sample for time $t$ is up
 \SetKwFunction{rtAt}{raytrace\mathunderscore at}
 \SetKwFunction{normRT}{normalize\mathunderscore raytrace}
 \SetKwProg{sm}{sensor\mathunderscore model}{}{end}
-\sm{$x.pose$}{
+\sm{$(x.pose)$}{
   \raytrace = \rtAt{$x.pose$}\;
   \raytrace = \normRT{\raytrace, $x.pose$}\;
   \Return{\raytrace}\;
@@ -186,6 +175,7 @@ Since the rays are supposed to simulate a camera, they are cast through an image
 %
 \begin{figure}[!htp]
   %\includegraphics[width=\columnwidth]{pics/raytrace_scheme}
+  \todo[inline]{add picture}
   \caption{Rays are cast from the robot's position through the image plane.}
   \label{fig:raytrace_scheme}
 \end{figure}
@@ -199,9 +189,9 @@ z_{min} &= F \cdot \tan{-\frac{\phi}{2}} &\\
 z_{max} &= F \cdot \tan{ \frac{\phi}{2}} &
 \end{align}
 %
-Thus the image plane's corners are $c_{bl}=(y_{min}, z_{min}), c_{br}=(y_{max}, z_{min}), c_{tl}=(y_{min}, z_{max}),$ and $c_{tr}=(y_{max}, z_{max})$. The cell size ($w$idth and $h$eight) is then calculated with $w=|c_{br}-c_{bl}|/res_{hor}$ and $h=|c_{tl}-c_{bl}|/res_{ver}$, with $res_{hor}$ being the horizontal and $res_{ver}$ the vertical resolution.
+Thus the image plane's corners are $c_{bl}=(y_{min}, z_{min}), c_{br}=(y_{max}, z_{min}), c_{tl}=(y_{min}, z_{max}),$ and $c_{tr}=(y_{max}, z_{max})$. The cell size ($w$idth and $h$eight) is calculated with $w=|c_{br}-c_{bl}|/res_{hor}$ and $h=|c_{tl}-c_{bl}|/res_{ver}$, with $res_{hor}$ being the horizontal and $res_{ver}$ the vertical resolution.
 
-However, algorithmically it is not necessary to calculate all these points or individual cells. $y_{min/max}, z_{min/max}$ and the cell size of the image plane's cells, $w$ and $h$, are already enough to iterate over the plane and cast a ray for each cell with \algRef{alg:iterate_imageplane}.
+However, algorithmically it is not necessary to calculate all these points or individual cells. $y_{min/max}, z_{min/max}$ and the cell size of the image plane's cells, $w$ and $h$, are already enough to iterate over the plane and cast a ray for each cell with \algRef{alg:iterate_imageplane}. The resulting intersections are stored into an array of points which is called point cloud.
 %
 \begin{algorithm}[!htp]
 \caption{Iterating the image plane to cast rays through each cell.}
@@ -210,32 +200,44 @@ $y = y_{min}$\;
 $z = z_{min}$\;
 \While{$y \le y_{max}$}{
   \While{$z \le z_{max}$}{
-    cast ray from $pose.position$ through $(y,z)$\;
+    cast ray from $pose.position$ through $(y,z)$, store intersection\;
     $z += h$\;
   }
   $y += w$\;
 }
 \end{algorithm}
 %
-To speed up the intersection checks, \gls{CGAL} offers the ability to build an \gls{AABB} from the map data\cite[]{cgal:atw-aabb-14b}. An \gls{AABB} is a data structure to store primitives in axis-aligned bounding boxes which are organized in a tree structure and therefore easier to process than the raw data. Primitives are simple geometries, in the case of \gls{AMCL6D} these simple geometries are triangles. Axis-aligned bounding boxes are cuboids with all edges parallel to the corresponding axis of the global coordinate system which encase an object, in the case of the \gls{AABB} the primitives. \figRef{fig:aabb_ex} illustrates an example for axis-aligned bounding box encasing a triangle. 
+To speed up the intersection checks, \gls{CGAL} offers the ability to build an \gls{AABB}\label{page:aabb} from the map data\cite[]{cgal:atw-aabb-14b}. An \gls{AABB} is a data structure to store primitives in axis-aligned bounding boxes which are organized in a tree structure and therefore easier to process than the raw data. Primitives are simple geometries, in the case of \gls{AMCL6D} these simple geometries are triangles. Axis-aligned bounding boxes are cuboids with all edges parallel to the corresponding axis of the global coordinate system which encase an object, in the case of the \gls{AABB} the primitives. \figRef{fig:aabb_ex} illustrates an example for axis-aligned bounding box encasing a triangle. 
 The speed up is achieved by checking for an intersection of the ray with a bounding box first, before calculating the exact intersection with the encased geometry.
 \begin{figure}%
-%\includegraphics[width=\columnwidth]{pics/aabb_ex}%
-\caption{An axis-aligned bounding box encasing a triangle.}%
-\label{fig:aabb_ex}%
+  %\includegraphics[width=\columnwidth]{pics/aabb_ex}%
+  \todo[inline]{add picture}
+  \caption{An axis-aligned bounding box encasing a triangle.}%
+  \label{fig:aabb_ex}%
 \end{figure}
 %
 \figRef{fig:raytrace} pictures an example ray trace showing the simulated robot's pose (arrow) and the point cloud which resulted from the ray trace at that pose.
 \begin{figure}[!htp]
   %\includegraphics[width=\columnwidth]{pics/raytrace_example}
+  \todo[inline]{add picture}
   \caption{A simulated ray trace in an example map.}
   \label{fig:raytrace}
 \end{figure}
 %
-To be able to compare the point cloud generated by the ray trace with the point cloud from the sensor, they need to be in the same reference frame. This means they both have to be transformed in a way such that their origins are at the same point. The pose of the sample can be used to construct an affine transformation matrix $A$, that is a matrix which describes the transformation needed from the global origin to the pose. By taking the inverse $A^{-1}$ it is possible to construct a matrix which describes the opposite: the transformation from the pose back to the origin. This inverted matrix $A^{-1}$ can be applied to each point $p$ in the point cloud $PCL$ to move it to a position relative to the global origin. Note that since a translation is involved, the points and matrix need to be extended by a homogenous coordinate.
+To be able to compare the point cloud generated by the ray trace with the point cloud from the sensor, they need to be in the same reference frame. This means they both have to be transformed in a way such that their origins are at the same point. The point most suitable for this is the global origin. 
+To transform a pose to the origin, it is possible to use an affine transformation matrix. This affine transformation matrix $A$ can be constructed easily: The orientation of the pose can be expressed by a $3\times3$ rotation matrix $R$ and the translation by a $3\times1$ matrix $T$. These two matrices can be combined and extended to a $4\times4$ matrix (\formRef{form:affinetransmatrix}).
+\begin{align}
+A = \left(\begin{array}{cccc}
+      R_{1,1} & R_{1,2} & R_{1,3} & T_{1,1} \\ 
+      R_{2,1} & R_{2,2} & R_{2,3} & T_{2,1} \\ 
+      R_{3,1} & R_{3,2} & R_{3,3} & T_{3,1} \\
+         0    &    0    &    0    &    1
+    \end{array}\right)\label{form:affinetransmatrix}
+\end{align}
+$A$ is then matrix which describes the transformation needed from the global origin to the pose. By taking the inverse $A^{-1}$ it is possible to calculate a matrix which describes the opposite: the transformation from the pose back to the origin. This inverted matrix $A^{-1}$ can be applied to each point $p$ in the point cloud result $PCL$ from the ray trace to transform them to positions which are relative to the origin as they were to the pose. Note that the points need to be homogenous, that means they need to be extended with a fourth component which is $1$.
 %
 \begin{align}
-  \forall p \in PCL: p = A^{-1} \dot p
+  \forall p \in PCL: \genfrac{(}{)}{0pt}{0}{p}{1} = A^{-1} \genfrac{(}{)}{0pt}{0}{p}{1}
 \end{align}
 %
 The resulting point cloud can be used to evaluate the corresponding sample in the evaluation function.
@@ -247,19 +249,40 @@ The resulting point cloud can be used to evaluate the corresponding sample in th
 \begin{algorithm}[!htp]
 \caption{Sample evaluation}
 \label{alg:eval}
-
+\SetKwFunction{kd}{prepare\mathunderscore kd\mathunderscore tree}
+\SetKwFunction{knn}{k\mathunderscore nearest\mathunderscore neighbors}
+\SetKwFunction{ed}{euclidean\mathunderscore distance}
+\SetKwFunction{size}{size}
+\SetKwData{kdtree}{kd\mathunderscore tree}
+\SetKwData{nn}{nearest\mathunderscore neighbor}
+\SetKwData{avgdst}{average\mathunderscore distance}
 \SetKwProg{ev}{evaluation}{}{end}
-\ev{}{
-a=b
+\SetKwData{smallval}{$\epsilon$}
+
+\ev{$(x.raytrace, m_t)$}{
+  \kdtree = \kd{$x.raytrace$}\;
+  \avgdst = \smallval\;
+  \ForAll{$p \in m_t$}{
+    \nn = \knn{$p$, \kdtree, 1}\;
+    \avgdst += \ed{$p$, \nn} / \size{$m_t$}\;
+  }
+  \Return{1/\avgdst}
 }
 \end{algorithm}
+The likelihood for each sample gets calculated in the evaluation function (\algRef{alg:eval}). Most of it is done with the \gls{FLANN}: First the sample's point cloud gets organized into a \gls{kdtree}. In the second step a \gls{knn} search is performed for each point in the sensor measurements to determine each respective closest neighbor. 
 
-alg:eval
-- KNN(1NN -> approx ICP) measurement -> sensor model
-- inverts average distance, i.e. 1/high values => small probability
+A \gls{kdtree} is a binary tree structure which recursively splits the space and stores each subspace into a child node of the previous one. Thus the root node resembles the whole space and the first split plane, its child nodes contain the subspaces yielded by the split plane. This is done until there is only one point left in a subspace, which becomes a leaf node. 
 
-.... sampling -> next file
+The \gls{knn} algorithm is used to find similarities in high dimensional data\cite[]{flann_pami_2014}. Its purpose is to find the $k$ points of a dataset which are closest to a given point. The most naive version of such an algorithm would just iterate over all points to search the $k$ closest points, \gls{FLANN} takes advantage of the \gls{kdtree} to speed up the calculations. 
 
+In \gls{AMCL6D} the \gls{knn} algorithm approximates an \gls{ICP} algorithm by making the assumption that the closest point (using $k=1$) would be the matching point. This assumption is allowed due to the transformation back to the origin in the sensor model (see \pageRef{form:affinetransmatrix}). 
 
+By inverting the mean distance between the sensor data and a sample it is possible to come up with a value between $0$ and $1$. This value is inverse proportional to the distance, that means if the distance is huge the value becomes really small, but if the distance is small the value gets closer to $1$. To avoid division by zero in the unlikely but possible case that the measurements have a distance of $0$, the average distance gets initialized with an arbitrary small value $\epsilon \in \mathcal{R} > 0$.
+
+The result of the evaluation function is used as the likelihood for the calculation of a samples new probability: $x.probability_t = \eta \cdot x.likelihood \cdot x.probability_{t-1}$. $\eta$ is the normalization constant which is the marginalization over all posterior probabilities (see \lineRef{alg:amcl6d}{alg:geteta}).
+
+\smallskip
+
+After evaluating the samples, they are sorted by their posterior probabilities. This allows for easier regeneration of poses with low posterior beliefs.
 
 \end{document}
