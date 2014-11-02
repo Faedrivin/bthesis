@@ -1,13 +1,24 @@
 \documentclass[Thesis.tex]{subfiles}
 \begin{document}
-\chapter{Beyond AMCL6D}
-\begin{itemize}
-	\item improved Raytracer
-  \item Less nodes
-  \item Evaluation function
-  \item Second sensor
-  \item ...
-\end{itemize}
+\chapter{Future improvements and possible changes}
 
+\subsection*{Dynamic respawn}
 
+One element of \gls{AMCL} was left out in \gls{AMCL6D}: The dynamic respawn rate of samples (cf. \citet{ThrunBurgardFox:2005}). Depending on how high the belief for specific poses is, \gls{AMCL} spawns more or less new pose samples. This allows for a more fine grained control of where to regenerate new samples and also changes the computational time needed for each iteration. If the belief for some pose samples is very high, less samples need to be checked in total until there are some far away from the good samples with like results. The less samples are maintained, the less computational effort is needed. This is especially for the ray tracer.
+
+\subsection*{Ray tracer}
+
+The ray tracer is the slowest factor in the algorithm. This might have two reasons, either it is because of its design as a \gls{ROS} service node or the speed of \gls{CGAL}. Improvements might be possible by implementing the ray tracer into the same node as \gls{AMCL6D} or by replacing the \gls{CGAL} ray tracer with a faster library. A smaller resolution might also be sufficient for the sensor model which would reduce the amount of computations for the ray tracer vastly. However, it needs to be shown if the results are better using an approach with lower or higher resolutions.
+
+\subsection*{Evaluation function}
+
+Another very important factor is the evaluation function. As in other applications where likelihoods are derived from comparisons with sensor inputs it is important to find the right evaluation to come up with reasonable values. The method used in \gls{AMCL6D} seemed to be quite reasonable: The average distance between two point clouds would be 0 if they were equal and increases with more points being further away from this baseline. But maybe simply another evaluation function has to be found. It is also possible that the assumptions made to justify \gls{knn} over \gls{ICP} are not valid. 
+
+\subsection*{Multiple sensors}
+
+If all these changes are done and \gls{AMCL6D} turns out to work, there are still many things to do. First of course it should be tested on a real robot and not only in simulations. After that it is possible to extend \gls{AMCL6D} further, for example by adding a second sensor which is directed to another direction than the first. This could help to reduce ambiguities and thus lead to faster convergence, but also introduces more data to process. This leads to the problem that sometimes better sensors are difficult to handle due to their different kind of data\cite[]{Smithers:1994}---or in this case more because of the amount of data.
+
+\section*{Conclusion}
+
+As it turned out, \gls{AMCL6D}, as implemented for this thesis, is not yet very effective. However, there is still much room left for improvement and changes, and since localization in continuous 3D maps will stay an important topic in the future it is worth pursuing this or similar approaches. 
 \end{document}

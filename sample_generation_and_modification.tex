@@ -1,7 +1,7 @@
 \documentclass[Thesis.tex]{subfiles}
 \begin{document}
 
-\section{Sample generation and modification}
+\section{Sample generation and regeneration}
 
 One important part of the algorithm is sampling. Not only the sampling of new poses is crucial, it is also important that the noise in the motion model is sampled correctly. 
 
@@ -44,12 +44,27 @@ q = \left( \sin{2\pi X_1}\sqrt{1-X_0},\: \cos{2\pi X_1}\sqrt{1-X_0},\:
 %\Return{q($s_1r_1, c_1r_1, s_2r_2, c_2r_2$)}
 %\end{algorithm}
 
-The generated vector $v$ and the orientation quaternion $q$ form the sampled robot pose. Initially all poses get the same probability: $\nicefrac{1}{n}$, where $n$ is the number of samples.
+The generated vector $v$ and the orientation quaternion $q$ form the sampled robot pose. Initially all poses get the same belief: $\nicefrac{1}{n}$, where $n$ is the number of samples.
 
 \subsection{Regenerating samples}
-\todo[inline]{this has to be implemented yet}
-Sample regeneration is performed as the last step in the \gls{AMCL6D} algorithm. The method used for resampling individual particles depends on $\theta_{close}, \theta_{random},$ and $\theta_{prob}$.
+Sample regeneration is performed as the last step in the \gls{AMCL6D} algorithm. The method used for resampling individual particles depends on $\theta_{close}, \theta_{random},$ and $\theta_{prob}$. The thresholds $\theta_{close}$ and $\theta_{random}$ are percentages. Their sum $\theta_{close}+\theta_{random}$ yields the percentage of the particles which will be regenerated. Thus if $\theta_{close} = 0.15$ and $\theta_{random} = 0.45$, the unlikeliest (meaning those with the lowest beliefs) $60 \%$ of the samples will be respawned, either \emph{closely} or \emph{randomly}, respectively. Additionally all samples with a belief smaller than $\theta_{prob}$ will be respawned \emph{randomly}.
 
-After each iteration 
+The samples which get respawned \emph{randomly} are definitely respawned, just the method how they are respawned is similar to the initial sample generation: They get a new uniform random pose and a belief of $\nicefrac{1}{n}$.
 
+For the samples which are respawned \emph{closely} another method is used. The new samples shall be close to good samples, so first it has to be determined which pose samples are good. \gls{AMCL6D} uses a fixed number of best samples, the samples with the highest beliefs. Then for each new sample a random sample from the best samples is chosen and used as a seed to generate a new pose. To generate a sample nearby, the same calculations are used which are already used in the motion model (see \formRef{form:mvndsampling}), only the parameters are changed. The covariance matrix $\Sigma$ can be adjusted manually, for \gls{AMCL6D} it is just a slightly modified identity matrix.
+\begin{align}
+\Sigma = \left(\begin{array}{cccccc}
+1 & 0 & 0 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 & 0 & 0 \\
+0 & 0 & 1 & 0 & 0 & 0 \\
+0 & 0 & 0 & \alpha & 0 & 0 \\
+0 & 0 & 0 & 0 & \alpha & 0 \\
+0 & 0 & 0 & 0 & 0 & \alpha
+\end{array}\right)
+\end{align}
+The value $\alpha$ is the change in orientation (in radians) we want to achieve. If for example $\alpha = \nicefrac{5\pi}{180}$, this would result in values of $\pm 5^\circ$ relative to the reference sample.
+
+If $\Sigma$ gets multiplied with a mean vector $\mu$ which holds the position of the reference sample and three $0$s, the resulting values can be used to construct a sample which is close to the reference. To do so, the position of the new pose just has to be set to the three first result values. The orientation however needs to be calculated similar to the orientation change in the motion model, by using three quaternions and rotation the orientation of the reference pose accordingly.
+
+The resulting pose is somewhere around the reference pose, depending on the choice of $\Sigma$.
 \end{document}
