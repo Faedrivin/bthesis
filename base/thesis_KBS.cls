@@ -101,7 +101,7 @@
 }{ % else -> english
   \RequirePackage[english]{babel}
   \ifthenelse{\value{bstyle} = 1}{
-    \bibliographystyle{plainnat}
+    \bibliographystyle{alpha}
   }{
     \bibliographystyle{alpha}
   }
@@ -139,7 +139,9 @@
 % natbib used to emulate the cite package,
 % which does NOT work correctly with hyperref
 % (though stated otherwise)
-\usepackage[sort&compress, square, comma]{natbib}
+%\usepackage[sort&compress, square, comma]{natbib}
+%\usepackage[style=alphabetic,natbib=true,backend=biber]{biblatex}
+% NOTE: BEST IS WITHOUT ANY OF THESE BUT THE DEFAULT
 
 % Improved citation handling in LaTeX.
 % Compatible with both hyperref and backref.

@@ -5,7 +5,7 @@
 
 One important part of the algorithm is sampling. Not only the sampling of new poses is crucial, it is also important that the noise in the motion model is sampled correctly. 
 
-Therefore the algorithm uses three different sampling strategies, depending on the use case for the sampled values. The first strategy is a uniform sampling to generate the initial poses. The second strategy (described on \pageRef{sec:motion_model_section}) is used for sampling noise according to the robot's sensor precision to simulate an accurate motion model. The last strategy is used to determine which poses need to be removed and where to regenerate new samples: this process filters the poses by replacing unlikely pose samples by pose samples with a bias towards the most likely ones.
+Therefore the algorithm uses three different sampling strategies. The chosen strategy depends on the use case for the sampled values. The first strategy is a uniform sampling to generate the initial poses. The second strategy (described in \secRef{sec:motion_model_section}) is used for sampling noise according to the robot's sensor precision to simulate an accurate motion model. The last strategy is used to determine which poses need to be removed and where to regenerate new samples. This process filters the poses by replacing unlikely pose samples with pose samples biased towards the likeliest ones.
 
 \subsection{Generating initial pose samples}\label{sec:init_samples}
 The generation of new pose samples is done by drawing random numbers from a uniform distribution. For the position there is no more work needed than mapping the sampled values into the correct range. For a random value $v$ from the range $S$ the remapped value $v_n$ from the range $T$ gets calculated by the formula $v_n = T_{min} + v \frac{|S|}{|T|}$, where $|S|$ denotes the length of range $S$ (or $T$, respectively) and $T_{min}$ denotes the smallest value of $T$. For the three needed values $x, y,$ and $z$ this results in the following calculations.
@@ -17,19 +17,19 @@ z &= z_{min} + \textbf{rand()} \left( z_{max} - z_{min} \right) \\
 v &= (x, y, z)
 \end{align}
 
-In this equation ${\bf rand()}$ draws \gls{iid} random numbers from the source range $R_s = \left[0, \dots, 1\right]$. $x_{min}$ and $x_{max}$ (for $y$ and $z$ respectively) describe the target range $R_t = \left[x_{min}, \dots, x_{max}\right]$ in which the samples shall be generated for the respective dimension. In this thesis they correspond to the boundaries of the map in each dimension.
+In this equation ${\bf rand()}$ draws \gls{iid} random numbers from $R_s = \left[0, \dots, 1\right]$, the source range. $x_{min}$ and $x_{max}$ (for $y$ and $z$ respectively) describe the target range $R_t = \left[x_{min}, \dots, x_{max}\right]$ in which the samples shall be generated for the respective dimension. In this thesis they correspond to the boundaries of the map in each dimension.
 
-By subtracting the minimum value of the source range $R_s$ from the sampled value, the range the random value is drawn from is shifted to zero---in this case the subtracted value would be $0$, so it's left out. The fraction $\frac{ x_{max} - x_{min} }{ 1 - 0 }$ describes the ratio between the lengths of the two ranges $\frac{|R_t|}{|R_s|}$. Again this can be simplified to just $x_{max}-x_{min}$. A multiplication of the shifted value and the ratio maps the value to the correct value in a zero shifted target interval with the length of the target range $|R_t|$. By adding the target range's minimal value, $x_{min}$, the sampled value gets shifted to the correct range.
+By subtracting the minimum value of the source range $R_s$ from the sampled value, the range the random value is drawn from is shifted to zero---in this case the subtracted value would be $0$, so it is left out. The value $x_{max} - x_{min}$ is the ratio between the lengths of the two ranges $\nicefrac{|R_t|}{|R_s|}$. A multiplication of the shifted value and the ratio maps the value to the correct value in a zero shifted target interval with the length of the target range $|R_t|$. By adding the target range's minimal value, $x_{min}$, the sampled value gets shifted to the correct range.
 
 This procedure is done for each of the three positional coordinates, resulting in the positional vector $v = \left(x, y, z\right)$.
 
-Sampling the orientation is done with the \emph{subgroup algorithm} by Ken Shoemake\cite[p.~129-130]{gfxgems:1995}. It generates a unit quaternion from three uniformly \gls{iid} random values $X_0, X_1, X_2$ of the following form:
+Sampling the orientation is done with the \emph{subgroup algorithm} by Ken Shoemake\cite{gfxgems:1995}. It generates a unit quaternion from three uniformly \gls{iid} random values $X_0, X_1, X_2$ of the following form:
 %
 \begin{align}
 q = \left( \sin{2\pi X_1}\sqrt{1-X_0},\: \cos{2\pi X_1}\sqrt{1-X_0},\: 
            \sin{2\pi X_2}\sqrt{  X_0},\: \cos{2\pi X_2}\sqrt{  X_0} \right)
 \end{align}
-
+%
 %\begin{algorithm}
 %\KwIn{Random variables $X_0, X_1, X_2$ between 0 and 1} 
 %\KwOut{Unit quaternion $q$}
@@ -43,15 +43,15 @@ q = \left( \sin{2\pi X_1}\sqrt{1-X_0},\: \cos{2\pi X_1}\sqrt{1-X_0},\:
 %$r_2 = \sqrt{X_0}$\;
 %\Return{q($s_1r_1, c_1r_1, s_2r_2, c_2r_2$)}
 %\end{algorithm}
-
-The generated vector $v$ and the orientation quaternion $q$ form the sampled robot pose. Initially all poses get the same belief: $\nicefrac{1}{n}$, where $n$ is the number of samples.
+%
+The generated vector $v$ and the orientation quaternion $q$ form the sampled robot pose. Initially all poses get the same belief of $\nicefrac{1}{n}$, where $n$ is the number of samples.
 
 \subsection{Regenerating samples}
 Sample regeneration is performed as the last step in the \gls{AMCL6D} algorithm. The method used for resampling individual particles depends on $\theta_{close}, \theta_{random},$ and $\theta_{prob}$. The thresholds $\theta_{close}$ and $\theta_{random}$ are percentages. Their sum $\theta_{close}+\theta_{random}$ yields the percentage of the particles which will be regenerated. Thus if $\theta_{close} = 0.15$ and $\theta_{random} = 0.45$, the unlikeliest (meaning those with the lowest beliefs) $60 \%$ of the samples will be respawned, either \emph{closely} or \emph{randomly}, respectively. Additionally all samples with a belief smaller than $\theta_{prob}$ will be respawned \emph{randomly}.
 
-The samples which get respawned \emph{randomly} are definitely respawned, just the method how they are respawned is similar to the initial sample generation: They get a new uniform random pose and a belief of $\nicefrac{1}{n}$.
+The samples which get respawned \emph{randomly} are definitely respawned, just the method how they are respawned is similar to the initial sample generation. They get a new uniform random pose and a belief of $\nicefrac{1}{n}$.
 
-For the samples which are respawned \emph{closely} another method is used. The new samples shall be close to good samples, so first it has to be determined which pose samples are good. \gls{AMCL6D} uses a fixed number of best samples, the samples with the highest beliefs. Then for each new sample a random sample from the best samples is chosen and used as a seed to generate a new pose. To generate a sample nearby, the same calculations are used which are already used in the motion model (see \formRef{form:mvndsampling}), only the parameters are changed. The covariance matrix $\Sigma$ can be adjusted manually, for \gls{AMCL6D} it is just a slightly modified identity matrix.
+For the samples which are respawned \emph{closely} another method is used. The new samples shall be close to good samples, so first it has to be determined which pose samples are good. \gls{AMCL6D} uses a fixed number of best samples, the samples with the highest beliefs. Then for each new sample a random sample from the best samples is chosen and used as a seed to generate a new pose. To generate a sample nearby, the same calculations are used which are already used in the motion model (see \formRef{form:mvndsampling}), only the parameters are changed. The covariance matrix $\Sigma$ can be adjusted manually, for \gls{AMCL6D} it is a slightly modified identity matrix.
 \begin{align}
 \Sigma = \left(\begin{array}{cccccc}
 1 & 0 & 0 & 0 & 0 & 0 \\
@@ -64,7 +64,7 @@ For the samples which are respawned \emph{closely} another method is used. The n
 \end{align}
 The value $\alpha$ is the change in orientation (in radians) we want to achieve. If for example $\alpha = \nicefrac{5\pi}{180}$, this would result in values of $\pm 5^\circ$ relative to the reference sample.
 
-If $\Sigma$ gets multiplied with a mean vector $\mu$ which holds the position of the reference sample and three $0$s, the resulting values can be used to construct a sample which is close to the reference. To do so, the position of the new pose just has to be set to the three first result values. The orientation however needs to be calculated similar to the orientation change in the motion model, by using three quaternions and rotation the orientation of the reference pose accordingly.
+If $\Sigma$ gets multiplied with a mean vector $\mu$ which holds the position of the reference sample and three $0$s, the resulting values can be used to construct a sample which is close to the reference. To do so, the position of the new pose has to be set to the three first result values. The orientation needs to be calculated similar to the orientation change in the motion model, by using three quaternions and rotating the orientation of the reference pose accordingly.
 
 The resulting pose is somewhere around the reference pose, depending on the choice of $\Sigma$.
 \end{document}

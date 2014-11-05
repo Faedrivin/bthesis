@@ -1,0 +1,53 @@
+\documentclass[Thesis.tex]{subfiles}
+
+\begin{document}
+
+\chapter*{List of tools and software}\label{sec:listoftools}
+This is a list of tools and software used to implement \gls{AMCL6D}. The 
+links were checked before printing the thesis, however they might not exist 
+by the time of reading. You can still try to search the web for the 
+corresponding versions or hope for new versions of each library or tool to 
+work as well.
+
+\bigskip
+
+\noindent\begin{tabularx}{\textwidth}{l|l|l|>{\tt\scriptsize}X}
+\begin{tabular}[b]{@{}l@{}}
+\bf Tool/\\
+\bf Software
+\end{tabular}  & \bf Version   & \bf Release   & \normalfont{\normalsize\bf URL} \\ \hline
+Boost          & 1.46.1        & 2011-03-12    & \url{http://www.boost.org/users/history/version_1_46_1.html} \\ \hdashline
+CGAL           & 3.9-1         & 2011-10-17    & \url{https://launchpad.net/ubuntu/+source/cgal/3.9-1} \\ \hdashline
+Eigen          & 3.0.5-1       & 2012-02-22    & \url{https://launchpad.net/ubuntu/+source/eigen3/3.0.5-1} \\ \hdashline
+FLANN          & 1.7.1-1       & \begin{tabular}[t]{@{}l@{}}
+                                 2011-12-20\\
+                                 (v1.7.0)
+                                 \end{tabular} & \url{http://flann.sourcearchive.com/downloads/1.7.1-1/} \\ \hdashline
+LVR Toolkit    & 0.7           & 2013-06-06    & \url{http://www.las-vegas.uni-osnabrueck.de/index.php/download} \\ \hdashline
+OpenMPI        & 1.4.3         & 2010-10-05    & \url{http://www.open-mpi.org/software/ompi/v1.4/} \\ \hdashline
+PCL            & 1.7.0         & 2013-07-23    & \url{http://casestudies.pointclouds.org/downloads/linux.html} \\ \hdashline
+ROS            & \begin{tabular}[t]{@{}l@{}}
+                 Hydro\\
+                 Medusa
+                 \end{tabular} & 2013-09-14    & \url{http://wiki.ros.org/hydro/Installation} \\ \hdashline
+Ubuntu         & \begin{tabular}[t]{@{}l@{}}
+                 12.04.5\\
+                 TLS
+                 \end{tabular} & 2014-08-07    & \url{http://releases.ubuntu.com/12.04/} \\
+%                 &                              &                & \url{} \\
+\end{tabularx}
+
+\bigskip
+
+\section*{University git repositories}
+\def\safeurl#1{\makeatletter#1\makeatother}
+\noindent\begin{tabularx}{\textwidth}{l|l|>{\tt\scriptsize}X}
+\bf Repository & \bf Description & \bf URL \\ \hline
+AMCL6D         & AMCL6D code     & \safeurl{software@kure.informatik.uos.de/amcl6d} \\ \hdashline
+meshing.pg2013 & RVIZ plugin     & \safeurl{software@kure.informatik.uos.de/meshing.pg2013} \\ \hdashline
+lvr\mathunderscore tools    & LVR Toolkit     & \safeurl{software@kure.informatik.uos.de/roslvr}
+\end{tabularx}
+
+
+
+\end{document}

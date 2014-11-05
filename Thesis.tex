@@ -20,10 +20,14 @@
 \usepackage[linesnumbered, procnumbered, nofillcomment, boxed, algochapter]{algorithm2e}\DontPrintSemicolon\SetAlCapSkip{.4em}
 %\usepackage{subcaption}
 \usepackage{todonotes}
+\usepackage{tabularx}
+\usepackage{arydshln}
 
-\usepackage[acronym, nonumberlist, nomain, toc]{glossaries}
+\usepackage[acronym, nonumberlist, nomain]{glossaries}
 \makeglossaries
 \loadglsentries{glossary_and_acronyms}
+
+\usepackage{appendix}
 
 \newcommand{\p}[3][p]{\ensuremath{#1\!\left({#2}\middle|{#3}\right)}}
 
@@ -33,13 +37,14 @@
 \def\tableRef#1{Table~\ref{#1}}
 \def\formRef#1{Formula~\ref{#1}}
 \def\pageRef#1{Page~\pageref{#1}}
-%\usepackage{makeidx}
-%\makeindex
+\def\chapRef#1{Chapter~\ref{#1}}
+\def\secRef#1{Section~\ref{#1}}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
 
-\title{Probabilistic robot localization\\ in continuous 3D maps}
+\title{Probabilistic Robot Localization\\ in Continuous 3D Maps}
 \author{Sebastian Höffner}
 \email{shoeffner@uos.de}
 \firstSupervisor{Prof. Dr. Joachim Hertzberg}
@@ -51,7 +56,7 @@
 
 %% Preface
 \cleardoublepage
-\begin{prefacesection}{Probabilistic robot localization in continuous 3D maps}
+\begin{prefacesection}{Probabilistic Robot Localization in Continuous 3D Maps}
 \subfile{abstract}
 \end{prefacesection}
 
@@ -93,7 +98,7 @@
 %\subfile{tests}
 
 % evaluation of results
-%\subfile{evaluation}
+\subfile{evaluation}
 
 % summary of the thesis
 %\subfile{summary}
@@ -101,16 +106,17 @@
 % further improvements, interesting insights for the future
 \subfile{future}
 
-\appendix
+\appendix\addappheadtotoc
 
 \cleardoublepage
 %\printglossary
 
-% list of figures & algorithms
+% lists of figures, tools and algorithms
 \listoffigures
 \listofalgorithms
-\glossarystyle{altlist}
-\printglossary[title={List of Acronyms},toctitle={List of Acronyms}]
+%\setglossarystyle{altlist}
+\printglossary[title={List of Acronyms}]
+\subfile{listoftools}
 
 \cleardoublepage
 \bibliography{thesis_bibliography}
