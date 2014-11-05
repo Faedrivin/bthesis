@@ -12,7 +12,7 @@ All three problems have in common that they need a suitable environment represen
 %The algorithm presented in this thesis will deal with the global localization problem and will also be able to recover from a kidnapped robot situation.
 
 \section{Bayes filters}
-A good way to model localization problems are Bayes filters. They make use of Bayes' theorem to calculate the probability of a pose $x$ at time $t$ by accounting for the probability at time $t-1$ and the likelihood of the current pose. The Bayes' theorem is as follows:
+A good way to model localization problems are Bayes filters. They make use of Bayes' theorem to calculate the probability of a pose $x$ at time $t$ by accounting for the probability at time $t-1$ and the likelihood of the current pose. This makes it possible to derive a state estimation from the data and a likelihood alone. The Bayes' theorem is as follows:
 %
 \begin{align}
 \p[P]{X}{Y} = \frac{ \p[P]{Y}{X} P(X) } { P(Y) }

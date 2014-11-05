@@ -74,9 +74,9 @@ $\eta = \frac{1}{ \sum\limits_{X_{t}}{\left( x.likelihood\ \cdot\ x.probability\
 }
 
 \end{algorithm}
-\todo[inline]{Introduction}
-%
-\algRef{alg:amcl6d} is a modification of the \gls{AMCL} algorithm presented in \cite{ThrunBurgardFox:2005}. Three major components are changed: The motion model, the sensor model, and the evaluation function. The motion model (\algRef{alg:motionmodel}) supports motion in six dimensions and updates the pose samples accordingly. The sensor model (\algRef{alg:sensormodel}) is implemented by a ray trace algorithm. This sensor model allows for simulated scan values in the 3D polygon map. Simulated scans are needed for the last changed major component, the evaluation function (\algRef{alg:eval}). The evaluation function employs a \gls{knn} algorithm to determine the average distance of the real sensor data to the sensor model.
+Mobile robots have to work in 3D environments. Such environments can be represented by continuous maps in which robots need to be able to locate themselves. The algorithm \glsreset{AMCL6D}\gls{AMCL6D} is designed to solve the localization problem in this kind of maps.
+
+\gls{AMCL6D} is a modification of the \gls{AMCL} algorithm presented in \cite{ThrunBurgardFox:2005}. Three major components are changed: The motion model, the sensor model, and the evaluation function. The motion model (\algRef{alg:motionmodel}) supports motion in six dimensions and updates the pose samples accordingly. The sensor model (\algRef{alg:sensormodel}) is implemented by a ray trace algorithm. This sensor model allows for simulated scan values in the 3D polygon map. Simulated scans are needed for the last changed major component, the evaluation function (\algRef{alg:eval}). The evaluation function employs a \gls{knn} algorithm to determine the average distance of the real sensor data to the sensor model.
 
 Before the iterative \gls{AMCL6D} algorithm starts, the program generates $n$ random samples $X_{t=0}$. They are uniformly distributed across the map, as described in \secRef{sec:init_samples}. Initially every sample gets assigned with a probability of $\nicefrac{1}{n}$. As soon as some motion is detected, \algRef{alg:amcl6d} starts the first iteration and updates the samples $X_{t-1}$ to $X_{t}$.
 
