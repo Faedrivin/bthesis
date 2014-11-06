@@ -59,11 +59,11 @@ By using Bayes' theorem over several time steps, it is possible to implement a M
 This simple \algRef{alg:bayesfilter} is the basic form of a Bayes filter. Its purpose is to find a state estimation by \emph{updating} the beliefs (bel($x_t$)) for each state $x$ during every time step $t$ and eventually converging to a value close to the true value. This is done by using the former posterior beliefs as priors for the new posterior beliefs.
 The state with the highest belief is the likeliest.
 
-\subsection{The door example}
+\subsection{A one dimensional example}\label{sec:doorex}
 \begin{figure}
   \centering
   \includegraphics[width=.9\columnwidth]{markov_localization}
-  \caption{Markov localization: A one dimensional corridor with indistinguishable doors. From \cite[p.~6]{ThrunBurgardFox:2005}.}
+  \caption[1D Markov localization]{Markov localization: A one dimensional corridor with indistinguishable doors. From \cite{ThrunBurgardFox:2005}.}
   \label{fig:markov_localization_one_dimension}
 \end{figure}
 

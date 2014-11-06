@@ -2,6 +2,69 @@
 \begin{document}
 \chapter{Simulation and results}
 
+The \gls{ROS} node built for \gls{AMCL6D} also includes a simple tool to simulate a robot pose. This tool was used to simulate and test the algorithm.
+To test the performance of the algorithm it was tested in the following categories:
+\begin{itemize}
+	\item The resolution of the ray tracer,
+	\item The performance in different maps,
+	\item and the performance in the same maps with different level of details.
+\end{itemize}
+To assure accuracy, for each map there was a random but arbitrary sequence of motions defined which was repeated several times. The simulated camera for the ray tracing always had aperture angles of $90{\ }^\circ$ (horizontal) and $60{\ }^\circ$ (vertical). 
+
+\section{Resolution of ray tracer}
+For the tests which resolutions yield good results
+
+
+\section{Performance in different maps}
+The performance is measured by taking the distance between the simulated real pose and the best hypothesis. For each of them the best values are stored.
+
+\subsection{Elevator doors}
+\begin{tabular}{lr}
+  \multicolumn{2}{c}{\bf Map/Test properties} \\
+	Vertex count & 3,774 \\
+  Face count & 3,924 \\
+  Sequence size & 100 \\
+  Resolution & 65x45
+\end{tabular}
+
+{\renewcommand{\arraystretch}{0.5}
+\noindent\begin{tabular}{@{\hspace{-2pt}}r|@{}r@{}r@{}r|@{}r@{}r@{}r|@{}r@{}r|@{}r@{}r}
+& \multicolumn{3}{c|}{\bf Best Position} 
+& \multicolumn{3}{c|}{\bf Best Orientation} 
+& \multicolumn{2}{c|}{\bf Termination}
+& \multicolumn{2}{c}{\bf Time (s)} \\
+\# & Pos.dst. & Or.dst. & Iter. &  Pos.dst. & Or.dst. & Iter. &  Pos.dst. & Or.dst. & Total & Avg.  \\ \toprule
+1   & 1.207   & 1.003   &    1  &  10.810   & 1.000   &   84  &  10.778   & 1.079   & 2139  & 21.39 \\
+    &         &         &       &           &         &       &           &         &       &       \\
+    &         &         &       &           &         &       &           &         &       &       \\
+    &         &         &       &           &         &       &           &         &       &       \\
+    &         &         &       &           &         &       &           &         &       &       \\
+\end{tabular}}
+
+\subsection{Church}
+
+
+\subsection{Police station}
+
+
+\subsection{Office corridor}
+
+
+
+\section{Ray tracing speed}
+Since the ray tracer was considered being slow during development, the time of the ray tracer was tracked during the other experiments as well.
+The results show what was already expected: The ray tracer consumes most of the node's running time and is a huge bottleneck.
+
+\noindent\begin{tabular}{r|lc|rr|l}
+\bf Run & \bf Map        & \bf Resolution & \bf Total time (s) & \bf RT time (s) & \bf \nicefrac{RT}{Total} (\%) \\ \toprule
+    1   & Elevator doors &  65x45         & 2139               & 2037            & 95.23 \\
+    2   & Elevator doors &  65x45         & 2191               & 2085            & 95.16 \\
+        & Elevator doors &  65x45         &                    &                 &       \\
+        & Elevator doors &  65x45         &                    &                 &       \\
+        & Elevator doors &  65x45         &                    &                 &       \\
+\bottomrule
+\end{tabular}
+
 
 
 

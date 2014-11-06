@@ -4,11 +4,13 @@
 
 \subsection*{Dynamic respawn}
 
-One element of \gls{AMCL} was left out in \gls{AMCL6D}: The dynamic respawn rate of samples (cf. \cite{ThrunBurgardFox:2005}). Depending on how high the belief for specific poses is, \gls{AMCL} spawns more or less new pose samples. This allows for a more fine grained control of where to regenerate new samples and also changes the computational time needed for each iteration. If the belief for some pose samples is very high, less samples need to be checked in total until there are some far away from the good samples with like results. The less samples are maintained, the less computational effort is needed. This is especially for the ray tracer.
+One element of \gls{AMCL} was changed in \gls{AMCL6D}: The dynamic respawn rate of samples (cf. \cite{ThrunBurgardFox:2005}). Depending on how high the belief for specific poses is, \gls{AMCL} spawns more or less new pose samples. This allows for a more fine grained control of where to regenerate new samples and also changes the computational time needed for each iteration. If the belief for some pose samples is very high, less samples need to be checked in total until there are some far away from the good samples with like results. The less samples are maintained, the less computational effort is needed. This is especially for the ray tracer.
 
 \subsection*{Ray tracer}
 
-The ray tracer is the slowest factor in the algorithm. This might have two\todo{Evaluate and prove it's CGAL?!?} reasons, either it is because of its design as a \gls{ROS} service node or the speed of \gls{CGAL}. Improvements might be possible by implementing the ray tracer into the same node as \gls{AMCL6D} or by replacing the \gls{CGAL} ray tracer with a faster library. A smaller resolution might also be sufficient for the sensor model which would reduce the amount of computations for the ray tracer vastly. \todo{I'm checking this, if there's enough time}However, it needs to be shown if the results are better using an approach with lower or higher resolutions.
+During the tests and simulation the ray tracer was found to be by far the slowest part of the algorithm. Improvements will most probably be achieved by replacing \gls{CGAL} with a faster library.
+
+\todo[inline]{change this according to results} A smaller resolution might also be sufficient for the sensor model which would reduce the amount of computations for the ray tracer vastly. However, it needs to be shown if the results are better using an approach with lower or higher resolutions.
 
 \subsection*{Evaluation function}
 

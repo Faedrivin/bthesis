@@ -63,7 +63,10 @@ For the samples which are respawned \emph{closely} another method is used. The n
 \end{array}\right)
 \end{align}
 The value $\alpha$ is the change in orientation (in radians) we want to achieve. If for example $\alpha = \nicefrac{5\pi}{180}$, this would result in values of $\pm 5^\circ$ relative to the reference sample. Of course the $1$s could also be replaced, now they resemble a standard normal distribution for the position.
-
-When the Cholesky factorization of $\Sigma$ is multiplied with a vector of random values (see \formRef{form:mvndsampling}) and added to a mean vector $\mu$ which holds the position of the reference sample and three $0$s, the resulting values can be used to construct a sample which is close to the reference. To do so, the position of the new pose has to be set to the three first result values. The orientation needs to be calculated similar to the orientation change in the motion model, by using three quaternions and rotating the orientation of the reference pose accordingly. The resulting pose is somewhere around the reference pose, depending on the choice of $\Sigma$ this may be closer or further.
+%
+\begin{align}
+n = C^T z + \mu \label{form:mvndsampling2}
+\end{align}
+\formRef{form:mvndsampling2} is the same as \formRef{form:mvndsampling}, used in the motion model. When the Cholesky factorization of $\Sigma$ is multiplied with a vector of random values and added to a mean vector $\mu$ which holds the position of the reference sample and three $0$s, the resulting values can be used to construct a sample which is close to the reference. To do so, the position of the new pose has to be set to the three first result values. The orientation needs to be calculated similar to the orientation change in the motion model, by using three quaternions and rotating the orientation of the reference pose accordingly. The resulting pose is somewhere around the reference pose, depending on the choice of $\Sigma$ this may be closer or further.
 
 \end{document}

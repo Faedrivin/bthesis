@@ -3,20 +3,45 @@
 
 \chapter{State of the art}
 % name EKF, etc.
-The distinction between local localization, global localization and the kidnapped robot problem is often not enough to describe localization problems. Thrun et al.\ also distinguish algorithms in two other categories: Which type of environment is approached and how it is approached\cite{ThrunBurgardFox:2005}.
+The distinction between local localization, global localization and the kidnapped robot problem is often not enough to describe localization problems. To allow for more precise classifications, Thrun et al.\ also distinguish algorithms in two other categories: Which type of environment is approached and how it is approached\cite{ThrunBurgardFox:2005}.
 
-Environments can either be static or dynamic. That means they either stay the same or they change over time. It can easily be guessed that dynamic environments are harder to navigate. Still most real-life applications in robotics deal with dynamic environments, some examples include opening or closing doors, people walking through the robot's path and many more. Even changes in the environmental lighting can cause the robot's sensor data to yield very different results. 
+Environments can either be static or dynamic. That means they either stay the same or they change over time and thus makes them harder to navigate. Still most real-life applications in robotics deal with dynamic environments, some examples include opening or closing doors, people walking through the robot's path and many more. Even changes in the environmental lighting can cause the robot's sensor data to yield very different results. 
 
 The last metric, the kind of approach chosen, is to distinguish between active and passive approaches. A passive approach is used whenever a robot has some tasks to do and just keeps track of its position while doing them. An active approach controls the robot towards poses which should help in improving the pose hypothesis (the best guess pose), thus reducing the localization error.
 
 Depending on the different characteristics of localization problems there are different algorithms to solve them. In general one can say that algorithms capable of solving kidnapped robot problems are also capable of solving global and local localization problems, while algorithms only designed for local localization problems will not be able to solve global localization nor kidnapped robot problems. It is also the case that algorithms for dynamic environments can solve the problems they are designed for in static environments as well. 
 
-\section{Sample based localization}
+\section{Sample based localization: Particle filters}
+One popular approach to solve localization problems are particle filters. Instead of representing \glspl{pdf} as continuous functions as it was done in the 1D example in \secRef{sec:doorex}, a particle filter represents a distribution by a set of samples drawn from it. This allows to represent more distributions than continuous models do\cite{ThrunBurgardFox:2005}. 
+The probability of a sample to be drawn is determined by the underlying distribution. Thus a set of samples is just a discrete approximation of the real distribution.
 
-\todo[inline]{one or two examples}
+Particle filters are basically an extension to Bayes filters. Each sample has a belief of how likely it is, that it can be drawn from the distribution. A particle filter uses the beliefs of each sample from the last time step as priors to calculate their posterior beliefs of the current time step. Being filters, these algorithms discard samples with low beliefs and replace them with new random samples after each iteration\cite{ThrunBurgardFox:2005}. This way the samples are kept which are the best approximation of the distribution.
 
-\subsection{Augmented Monte Carlo Localization in two dimensions}
-\todo[inline]{Notes that AMCL6D is based on AMCL}
+\section{Augmented Monte Carlo Localization}
+As shown in \figRef{fig:markov_localization_one_dimension}, the pose of a mobile robot can be described by a \gls{pdf}. By using the ability of a particle filter to approximate distributions it is possible to approximate the robot's pose, hence locate the robot. In this case the particle filters implement a motion model to change the samples according to the measured robot motion and a sensor model to provide a simulation of the sensor data, i.e. to determine what sensor data each sample would expect. By comparing each sample's simulated sensor data from the sensor model with the real sensor data it is possible to come up with a likelihood for each sample. After calculating the posterior beliefs for each sample the unlikeliest are replaced by new random samples. These kind of algorithms are called \glspl{MCL}.
 
+\begin{algorithm}
+\SetKwProg{mcl}{Monte\mathunderscore Carlo\mathunderscore Localization}{}{end}
+\SetKwFunction{appmotion}{apply\mathunderscore motion\mathunderscore model}
+\SetKwFunction{appsensor}{apply\mathunderscore sensor\mathunderscore model}
+\SetKwFunction{replace}{replace\mathunderscore sample}
+\SetKwData{sample}{sample}
+\SetKwData{bel}{belief}
+\mcl{$()$}{
+  \ForEach{\sample}{
+    \sample.\appmotion{}\;
+    \sample.\appsensor{}\;
+  }
+  \ForEach{\sample}{
+    \If{\sample.\bel < $\theta$}{
+      \sample.\replace{}\;
+    }
+  }
+}
+\label{alg:mcl}
+\caption[\acrlong{MCL}]{The basic \gls{MCL} algorithm.}
+\end{algorithm}
+
+\gls{MCL} offers different possibilities of adjustments. For instance the motion model and sensor model have to be replaced with suitable variants. Another adjustment is done by \glsreset{AMCL}\gls{AMCL}. \gls{AMCL} adapts the number of samples depending on the overall likelihood of the current samples. That means, that if there are many samples with high beliefs, fewer samples will be generated than in the case that there are only samples with low beliefs. This helps to maintain a stable amount of samples around the likeliest samples without losing the ability to recover from a sudden relocation\cite{ThrunBurgardFox:2005}.
 
 \end{document}
