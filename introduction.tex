@@ -19,10 +19,6 @@ The situation of relocating a robot and thus forcing it to redetermine its posit
 There are several algorithms which solve localization problems in two dimensional maps locally or globally. A very popular algorithm, which is also capable of solving the kidnapped robot problem, is Monte Carlo Localization\cite{DellaertFoxBurgardThrun:1999}. One variant, the \gls{AMCL}, can be found in \emph{Probabilistic Robotics}\cite{ThrunBurgardFox:2005}.
 
 For this algorithm, environments are represented as 2D maps. This is useful for many real-life applications, since many robots operate in more or less flat environments. Although it is sufficient for most environments to represent them in a 2D map, environments with altitude differences (e.g. factories with ramps or normal houses with stairs) are hard to represent this way. Also robots which are capable of moving in more than two dimensions, e.g. flying robots, could benefit from more information than just 2D maps.
-However, there are few approaches to locate robots in 3D environments. Therefore I will derive an algorithm based on the classic \gls{AMCL} to localize a robot in an arbitrary 3D environment.
-
-With the extension to a third dimension the environment should offer fewer ambiguous locations than two dimensional ones, since there are more features to detect and to be compared with the map. %This should lead to a faster convergence towards the real pose of the robot. 
-\todo[inline]{find out and change accordingly}
-Additionally it should be possible to locate robots which are toppled over, turned upside down or flying around---basically any kind of pose in the three dimensional space should be detectable.
+However, there are few approaches to locate robots in 3D environments. Therefore I will derive an algorithm based on the classic \gls{AMCL} to localize a robot in an arbitrary 3D environment. I will show that the algorithm works up to a certain point but is not stable, thus once it is close to the real pose, it loses track and becomes unstable.
 
 \end{document}

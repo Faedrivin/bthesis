@@ -4,13 +4,11 @@
 
 \subsection*{Dynamic respawn}
 
-One element of \gls{AMCL} was changed in \gls{AMCL6D}: The dynamic respawn rate of samples (cf. \cite{ThrunBurgardFox:2005}). Depending on how high the belief for specific poses is, \gls{AMCL} spawns more or less new pose samples. This allows for a more fine grained control of where to regenerate new samples and also changes the computational time needed for each iteration. If the belief for some pose samples is very high, less samples need to be checked in total until there are some far away from the good samples with like results. The less samples are maintained, the less computational effort is needed. This is especially for the ray tracer.
+One element of \gls{AMCL} was changed in \gls{AMCL6D}: The dynamic respawn rate of samples (cf. \cite{ThrunBurgardFox:2005}). Depending on how high the belief for specific poses is, \gls{AMCL} spawns more or less new pose samples. This allows for a more fine grained control of where to regenerate new samples and also changes the computational time needed for each iteration. If the belief for some pose samples is very high, less samples need to be checked in total until there are some far away from the good samples with like results. The less samples are maintained, the less computational effort is needed. This is especially important for the ray tracer.
 
-\subsection*{Ray tracer}
+\subsection*{Ray tracer and computation times}
 
-During the tests and simulation the ray tracer was found to be by far the slowest part of the algorithm. Improvements will most probably be achieved by replacing \gls{CGAL} with a faster library.
-
-\todo[inline]{change this according to results} A smaller resolution might also be sufficient for the sensor model which would reduce the amount of computations for the ray tracer vastly. However, it needs to be shown if the results are better using an approach with lower or higher resolutions.
+During the tests and simulation the ray tracer was found to be by far the slowest part of the algorithm. Improvements will most probably be achieved by replacing \gls{CGAL} with a faster library. Surprisingly it did not make a huge difference in the results which resolutions were used, but a huge difference in computation times. So using a smaller resolution is also a way to reduce computation times.
 
 \subsection*{Evaluation function}
 
@@ -22,6 +20,6 @@ If all these changes are done and \gls{AMCL6D} turns out to work, there are stil
 
 \section*{Conclusion}
 
-As it turned out, \gls{AMCL6D}, as implemented for this thesis, is not yet very effective. However, there is still much room left for improvement and changes, and since localization in continuous 3D maps will stay an important topic in the future it is worth pursuing this or similar approaches. 
+As it turned out, \gls{AMCL6D} as implemented for this thesis, is not yet very effective. It comes close to the correct poses, but loses track of it and fails to recover from the loss. However, there is still much room left for improvements and changes, and since localization in continuous 3D maps will stay an important topic in the future, it is worth pursuing this or similar approaches. 
 
 \end{document}
