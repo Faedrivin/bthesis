@@ -1,0 +1,58 @@
+\tdplotsetmaincoords{65}{155}
+\begin{tikzpicture}[tdplot_main_coords, scale=.6]
+
+\small
+% define plane etc
+\def\zMin{-4}
+\def\zMax{4}
+\def\yMin{-5}
+\def\yMax{5}
+\def\Focus{-8}
+
+% draw grid
+\foreach \y in {\yMin,...,\yMax} \draw[thin, -, gray!20] (\Focus,\y,\zMin) -- (\Focus,\y,\zMax);
+\foreach \z in {\zMin,...,\zMax} \draw[thin, -, gray!20] (\Focus,\yMin,\z) -- (\Focus,\yMax,\z);
+\draw[->] (\Focus, \yMin-.4,    \zMin) -- (   \Focus, \yMax+.7,    \zMin) node[above right] {y};
+\draw[->] (\Focus,    \yMin, \zMin-.4) -- (   \Focus,    \yMin, \zMax+.5) node[below right] {z};
+\draw[->] (    .4,    \yMin,    \zMin) -- (\Focus-.5,    \yMin,    \zMin) node[below right] {x} ; 
+% draw special ticks
+\draw[-] (     0, \yMin, \zMin) -- (     0,    \yMin, \zMin-.2) node[below]       {0};
+\draw[-] (\Focus,     0, \zMin) -- (\Focus,        0, \zMin-.2) node[below right] {0};
+\draw[-] (\Focus, \yMin,     0) -- (\Focus, \yMin-.2,        0) node[above left]        {0};
+\draw[-] (\Focus, \yMin, \zMax) -- (\Focus, \yMin-.2,    \zMax) node[below left]  {\small ($F$, $y_{min}$, $z_{max}$)};
+\draw[-] (\Focus, \yMax, \zMin) -- (\Focus,    \yMax, \zMin-.2) node[below left]  {\small ($F$, $y_{max}$, $z_{min}$)};
+\node[above left]  at(0, \yMin, \zMin) {\small ($0$, $y_{min}$, $z_{min}$)};
+
+% window (cbr = corner bottom left, t = top, r = right, accordingly)
+\coordinate(cbl) at (\Focus, .5*\yMin, .5*\zMin) node[below left]  at (cbl) {$c_{bl}$};
+\coordinate(cbr) at (\Focus, .5*\yMax, .5*\zMin) node[below right] at (cbr) {$c_{br}$};
+\coordinate(ctr) at (\Focus, .5*\yMax, .5*\zMax) node[above right] at (ctr) {$c_{tr}$};
+\coordinate(ctl) at (\Focus, .5*\yMin, .5*\zMax) node[above left]  at (ctl) {$c_{tl}$};
+
+\draw[cyan] (cbl) -- (cbr) -- (ctr) -- (ctl) -- (cbl);
+
+% cam and coordinate in origin
+\coordinate(origin) at (0, 0, 0) node[above left] at (origin) {Cam $(0,0,0)$};
+\fill[olive] (origin) circle (.1);
+
+% lines and angles (abr = angle bottom right, etc.)
+\foreach \c / \a in {cbl/abl,cbr/abr,ctl/atl,ctr/atr}
+  \draw[dashed, thin, gray] (origin) -- coordinate[pos=0.4] (\a) (\c);
+
+\draw[thin, -, blue] (atl) to[curve to, relative]                                (abl);
+\draw[thin, -, blue] (abl) to[curve to, relative, out=45, in=125, looseness=0.7] (abr);
+
+% this is quite ugly at the moment, but it works
+\node[blue] at (-2, 0, .5) {$\phi$};
+\node[blue] at (-2.5, 0, -.6) {$\theta$};
+
+% draw help lines for focus/camera
+\draw[thin, dashed, gray] (0, \yMin, \zMin) -- (0, 0, \zMin);
+\draw[thin, dashed, gray] (origin) -- (0, 0, \zMin) -- (\Focus, 0, \zMin);
+
+% draw distances
+\draw[thin, |-|, orange]         (0, 0, \zMin-.3)      -- node[below right] {$F$} (\Focus, 0, \zMin-.3);
+\draw[thin, dashed, |-|, orange] ($(ctr) + (0,.4,0)$)  -- node[right]       {$h$} ($(cbr) + (0,.4,0)$);
+\draw[thin, dashed, |-|, orange] ($(ctr) + (0,.4,.4)$) -- node[above right] {$w$} ($(ctl) + (0,.4,.4)$);
+ 
+\end{tikzpicture}
